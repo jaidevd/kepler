@@ -18,12 +18,15 @@ from traitlets import HasTraits, Enum, Union, Unicode, Instance, Tuple, Dict
 from h5py import File as H5File
 
 from kepler.custom_traits import KerasModelWeights
+from kepler.utils import get_engine
+from kepler.db_models import ModelDBModel
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Integer, DateTime, ForeignKey, Column, String
+from sqlalchemy.orm import sessionmaker
 
 warnings.simplefilter('always', category=UserWarning)
 
-KeplerBase = declarative_base()
+engine = get_engine()
 
 
 class Project(HasTraits):
@@ -41,6 +44,13 @@ class ModelInspector(HasTraits):
     weights_path = KerasModelWeights()
 
     model_definition = Unicode()
+
+    def __init__(self, *args, **kwargs):
+        """
+        Overwritten from parent to include the created timestamp.
+        """
+        super(ModelInspector, self).__init__(*args, **kwargs)
+        self.created = datetime.now()
 
     @property
     def model_config(self):
@@ -74,6 +84,18 @@ class ModelInspector(HasTraits):
 
     def __exit__(self, _type, value, traceback):
         self.model.fit = self.oldfit
+        self.save()
+    
+    def save(self):
+        """
+        Save the model details to the Kepler db.
+        
+        """
+        attrs = [k.name for k in ModelDBModel.__table__.columns if not k.primary_key]
+        inst = ModelDBModel(**{k: getattr(self, k) for k in attrs})
+        session = sessionmaker(bind=engine)()
+        session.add(inst)
+        session.commit()
 
 
 class Experiment(HasTraits):
@@ -115,64 +137,3 @@ class Experiment(HasTraits):
         """Save the experiment in the db.
         """
         pass
-
-
-class ModelDBModel(KeplerBase):
-    """
-    Model for containing models. Yeah. Tautology.
-
-    Parameters
-    ----------
-    KeplerBase : [type]
-        [description]
-
-    """
-    __tablename__ = 'models'
-
-    id = Column(Integer, primary_key=True)
-    weights_path = Column(String)
-    definition = Column(String)
-    created = Column(DateTime)
-
-    def __repr__(self):
-        return 'Some model ID: ' + str(self.id)
-
-
-class ExperimentDBModel(KeplerBase):
-    """
-    Model for logging experiments.
-
-    Parameters
-    ----------
-    KeplerBase : [type]
-        [description]
-
-    """
-    __tablename__ = 'experiments'
-
-    id = Column(Integer, primary_key=True)
-    start_time = Column(DateTime)
-    end_time = Column(DateTime)
-    model = ForeignKey(Integer, 'models.id')
-
-    def __repr__(self):
-        return 'Some experiment ID: ' + str(self.id)
-
-
-class HistoryModel(KeplerBase):
-    """
-    Model for maintaining histories.
-
-    Parameters
-    ----------
-    KeplerBase : [type]
-        [description]
-
-    """
-    __tablename__ = 'history'
-
-    id = Column(Integer, primary_key=True)
-    experiment = Column(Integer, ForeignKey('experiments.id'))
-
-    def __repr__(self):
-        return 'Some history log ID: ' + str(self.id)

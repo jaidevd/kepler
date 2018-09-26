@@ -10,7 +10,7 @@
 import os
 import os.path as op
 import click
-from kepler.utils import initdb
+from kepler.utils import initdb, init_config
 
 
 @click.group()
@@ -24,6 +24,7 @@ def init(path):
     path = op.expanduser(path)
     if not op.exists(path):
         os.mkdir(path)
+    init_config(path)
     initdb(path)
 
 
