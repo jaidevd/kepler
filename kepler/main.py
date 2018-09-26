@@ -5,12 +5,19 @@
 Kepler.
 """
 
+from datetime import datetime
 from functools import wraps
+import json
 import warnings
+
+import numpy as np
 from keras.models import Model
 from keras.utils.layer_utils import count_params
 from sklearn.base import BaseEstimator
-from traitlets import HasTraits, Enum, Instance, Union, Unicode
+from traitlets import HasTraits, Enum, Union, Unicode, Instance, Tuple, Dict
+from h5py import File as H5File
+
+from kepler.custom_traits import KerasModelWeights
 
 warnings.simplefilter('always', category=UserWarning)
 
@@ -26,6 +33,17 @@ class ModelInspector(HasTraits):
     model = Union([Instance(Model), Instance(BaseEstimator)])
 
     commit = Unicode()
+
+    weights_path = KerasModelWeights()
+
+    model_definition = Unicode()
+
+    @property
+    def model_config(self):
+        with H5File(self.weights_path, 'r') as fout:
+            config = fout.attrs.get('model_config')
+        config = json.loads(config.decode())
+        return config['config']
 
     @property
     def n_params(self):
@@ -52,3 +70,44 @@ class ModelInspector(HasTraits):
 
     def __exit__(self, _type, value, traceback):
         self.model.fit = self.oldfit
+
+
+class Experiment(HasTraits):
+
+    model = Instance(Model)
+
+    train_x = Instance(np.ndarray)
+    train_y = Instance(np.ndarray)
+    validation_x = Instance(np.ndarray)
+    validation_y = Instance(np.ndarray)
+
+    start_ts = Instance(datetime)
+    fit_args = Tuple()
+    fit_kwargs = Dict()
+
+    def __eq__(self, other):
+        """Check if this experiment is _similar_ to `other`.
+
+        Arguments:
+            other {kepler.Experiment} -- Another experiment
+        """
+
+    def __enter__(self):
+        self.start_ts = datetime.now()
+        return self
+
+    def __exit__(self):
+        self.save()
+
+    @property
+    def history(self):
+        return self.model.history
+
+    @property
+    def n_epochs(self):
+        return self.fit_kwargs['epochs']
+
+    def save(self):
+        """Save the experiment in the db.
+        """
+        pass
