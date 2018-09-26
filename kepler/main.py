@@ -18,8 +18,12 @@ from traitlets import HasTraits, Enum, Union, Unicode, Instance, Tuple, Dict
 from h5py import File as H5File
 
 from kepler.custom_traits import KerasModelWeights
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Integer, DateTime, ForeignKey, Column, String
 
 warnings.simplefilter('always', category=UserWarning)
+
+KeplerBase = declarative_base()
 
 
 class Project(HasTraits):
@@ -111,3 +115,64 @@ class Experiment(HasTraits):
         """Save the experiment in the db.
         """
         pass
+
+
+class ModelDBModel(KeplerBase):
+    """
+    Model for containing models. Yeah. Tautology.
+
+    Parameters
+    ----------
+    KeplerBase : [type]
+        [description]
+
+    """
+    __tablename__ = 'models'
+
+    id = Column(Integer, primary_key=True)
+    weights_path = Column(String)
+    definition = Column(String)
+    created = Column(DateTime)
+
+    def __repr__(self):
+        return 'Some model ID: ' + str(self.id)
+
+
+class ExperimentDBModel(KeplerBase):
+    """
+    Model for logging experiments.
+
+    Parameters
+    ----------
+    KeplerBase : [type]
+        [description]
+
+    """
+    __tablename__ = 'experiments'
+
+    id = Column(Integer, primary_key=True)
+    start_time = Column(DateTime)
+    end_time = Column(DateTime)
+    model = ForeignKey(Integer, 'models.id')
+
+    def __repr__(self):
+        return 'Some experiment ID: ' + str(self.id)
+
+
+class HistoryModel(KeplerBase):
+    """
+    Model for maintaining histories.
+
+    Parameters
+    ----------
+    KeplerBase : [type]
+        [description]
+
+    """
+    __tablename__ = 'history'
+
+    id = Column(Integer, primary_key=True)
+    experiment = Column(Integer, ForeignKey('experiments.id'))
+
+    def __repr__(self):
+        return 'Some history log ID: ' + str(self.id)
