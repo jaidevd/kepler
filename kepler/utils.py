@@ -52,3 +52,7 @@ def init_config(path):
         path = op.join(path, 'config.ini')
     sampleconfig = op.join(op.dirname(__file__), 'fixtures', 'sample.ini')
     shutil.copy(sampleconfig, path)
+
+
+def is_power2(n):
+    return n != 0 and ((n & (n - 1)) == 0)
