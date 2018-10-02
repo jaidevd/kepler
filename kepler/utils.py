@@ -1,28 +1,42 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
-#
-# JSM product code
-#
-# (C) Copyright 2018 Juxt SmartMandate Pvt Ltd
-# All right reserved.
-#
-# This file is confidential and NOT open source.  Do not distribute.
-#
-
+"""
+Miscellaneous functions.
 """
 
-"""
-
-from configparser import ConfigParser, NoOptionError, NoSectionError
-from datetime import datetime
 import os
 import os.path as op
 import shutil
 import sqlite3
+from collections import Counter
+from configparser import ConfigParser, NoOptionError, NoSectionError
+from datetime import datetime
+
+from keras import layers as L
+from keras.engine.base_layer import Layer
+from keras.engine.training import Model
+from keras.utils.layer_utils import count_params as k_count_params
+from sklearn.feature_extraction import DictVectorizer
 from sqlalchemy import create_engine
+import yaml
 
 from kepler.db_models import KeplerBase
+
+
+def get_keras_layers():
+    layers = []
+    for attr in dir(L):
+        try:
+            if issubclass(getattr(L, attr), Layer):
+                layers.append(attr)
+        except TypeError:
+            continue
+    return layers
+
+
+LAYERS = get_keras_layers()
+LAYER_DV = DictVectorizer().fit([dict.fromkeys(LAYERS, 0)])
 
 
 def load_config():
@@ -62,7 +76,7 @@ def init_config(path):
 def get_engine(dbpath=None):
     """
     Get an SQLAlchemy engine configured from the ~/.kepler/config.ini file.
-    
+
     """
     if not dbpath:
         config = load_config()
@@ -71,8 +85,60 @@ def get_engine(dbpath=None):
         except (NoOptionError, NoSectionError):
             dbpath = op.join(os.environ.get('KEPLER_HOME', '~/.kepler'), 'kepler.db')
             dbpath = op.abspath(dbpath)
+        dbpath = op.expanduser(dbpath)
     return create_engine('sqlite:///' + op.abspath(dbpath))
 
 
 def is_power2(n):
     return n != 0 and ((n & (n - 1)) == 0)
+
+
+def count_params(model):
+    model._check_trainable_weights_consistency()
+    tw = getattr(model, '_collected_trainable_weights',
+                 model.trainable_weights)
+    return k_count_params(tw)
+
+
+def count_layers(model, trainable_only=True):
+    if trainable_only:
+        return sum([c.trainable for c in model.layers])
+    return len(model.layers)
+
+
+def count_layer_types(model):
+    if isinstance(model, Model):
+        layer_counts = Counter([c.__class__.__name__ for c in model.layers])
+    else:
+        layer_counts = Counter([c['class_name'] for c in model])
+    return layer_counts
+
+
+def layer_architecture(model):
+    if isinstance(model, dict):
+        layer_config = model['config']['layers']
+    else:
+        layer_config = model._updated_config()['config']['layers']
+    for l in layer_config:
+        l.pop('name', None)
+        l.get('config', {}).pop('name', None)
+    return layer_config
+
+
+def model_representation(model, dv=LAYER_DV):
+    """Get a sparse vector representation of a model.
+
+    Arguments:
+        model {keras.engine.training.Model or str} -- Path to a yaml
+        file containing model descriptions or the actual model.
+
+    """
+    if isinstance(model, str):
+        if op.isfile(model):
+            with open(model, 'r') as fin:
+                spec = yaml.load(fin)
+        else:
+            spec = yaml.load(model)
+        model = layer_architecture(spec)
+    layer_counts = count_layer_types(model)
+    return dv.transform(layer_counts)

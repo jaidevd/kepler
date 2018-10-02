@@ -5,24 +5,27 @@
 Kepler.
 """
 
+import json
+from inspect import signature
+import os
+import os.path as op
+import warnings
+from uuid import uuid4
 from datetime import datetime
 from functools import wraps
-import json
-import warnings
 
-import numpy as np
-from keras.models import Model
-from keras.utils.layer_utils import count_params
-from sklearn.base import BaseEstimator
-from traitlets import HasTraits, Enum, Union, Unicode, Instance, Tuple, Dict
+import numpy as np  # noqa: F401
+import pandas as pd
 from h5py import File as H5File
-
-from kepler.custom_traits import KerasModelWeights
-from kepler.utils import get_engine
-from kepler.db_models import ModelDBModel
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Integer, DateTime, ForeignKey, Column, String
+from keras.models import Model
+from sklearn.base import BaseEstimator
 from sqlalchemy.orm import sessionmaker
+from traitlets import (Dict, Enum, HasTraits, Instance, Tuple,  # noqa: F401
+                       Unicode, Union, Integer)
+
+from kepler.custom_traits import KerasModelWeights, KerasYamlSpec
+from kepler.db_models import ModelDBModel, ExperimentDBModel, HistoryModel
+from kepler.utils import count_params, get_engine, load_config
 
 warnings.simplefilter('always', category=UserWarning)
 
@@ -43,7 +46,9 @@ class ModelInspector(HasTraits):
 
     weights_path = KerasModelWeights()
 
-    model_definition = Unicode()
+    model_specs = KerasYamlSpec()
+
+    keras_type = Unicode()
 
     def __init__(self, *args, **kwargs):
         """
@@ -51,6 +56,12 @@ class ModelInspector(HasTraits):
         """
         super(ModelInspector, self).__init__(*args, **kwargs)
         self.created = datetime.now()
+
+    @property
+    def keras_type(self):
+        """Type of keras model.
+        """
+        return self.model.__class__.__name__
 
     @property
     def model_config(self):
@@ -61,10 +72,11 @@ class ModelInspector(HasTraits):
 
     @property
     def n_params(self):
-        self.model._check_trainable_weights_consistency()
-        tw = getattr(self.model, '_collected_trainable_weights',
-                     self.model.trainable_weights)
-        return count_params(tw)
+        return count_params(self.model)
+
+    @property
+    def n_layers(self):
+        return sum([c.trainable for c in self.model.layers])
 
     def check_fit_for_overfitting(self, fit_method):
         """Checks if the fit method might be overfitting."""
@@ -77,63 +89,96 @@ class ModelInspector(HasTraits):
             return fit_method(X, y, *args, **kwargs)
         return overfit_wrapper
 
+    def write_model_spec(self):
+        if not self.model_specs:
+            config = load_config()
+            uid = uuid4()
+            specs_dir = op.expanduser(config.get('models', 'spec_dir'))
+            if not op.isdir(specs_dir):
+                os.makedirs(specs_dir)
+            outpath = op.join(specs_dir, str(uid) + '.yml')
+            with open(outpath, 'w') as fout:
+                fout.write(self.model.to_yaml())
+            self.model_specs = outpath
+
     def __enter__(self):
+        self.instance = ModelDBModel()
+        self.session = sessionmaker(bind=engine)()
+        self.session.add(self.instance)
+        self.session.commit()
         self.oldfit = self.model.fit
-        self.model.fit = self.check_fit_for_overfitting(self.model.fit)
-        return self.model
+        # Added just as an example
+        # self.model.fit = self.check_fit_for_overfitting(self.model.fit)
+        self.write_model_spec()
+        return self
 
     def __exit__(self, _type, value, traceback):
         self.model.fit = self.oldfit
         self.save()
-    
+
     def save(self):
         """
         Save the model details to the Kepler db.
-        
+
         """
         attrs = [k.name for k in ModelDBModel.__table__.columns if not k.primary_key]
-        inst = ModelDBModel(**{k: getattr(self, k) for k in attrs})
-        session = sessionmaker(bind=engine)()
-        session.add(inst)
-        session.commit()
+        for attr in attrs:
+            setattr(self.instance, attr, getattr(self, attr))
+        self.session.add(self.instance)
+        self.session.commit()
+        self.session.close()
+
+    def get_experiment(self):
+        return Experiment(model=self)
 
 
 class Experiment(HasTraits):
 
-    model = Instance(Model)
+    model = Instance(ModelInspector)
 
-    train_x = Instance(np.ndarray)
-    train_y = Instance(np.ndarray)
-    validation_x = Instance(np.ndarray)
-    validation_y = Instance(np.ndarray)
-
-    start_ts = Instance(datetime)
-    fit_args = Tuple()
-    fit_kwargs = Dict()
-
-    def __eq__(self, other):
-        """Check if this experiment is _similar_ to `other`.
-
-        Arguments:
-            other {kepler.Experiment} -- Another experiment
-        """
-
-    def __enter__(self):
-        self.start_ts = datetime.now()
-        return self
-
-    def __exit__(self):
-        self.save()
-
-    @property
-    def history(self):
-        return self.model.history
-
-    @property
-    def n_epochs(self):
-        return self.fit_kwargs['epochs']
+    # what's in an experiment?
+    start_time = Instance(datetime)
+    end_time = Instance(datetime)
+    n_epochs = Integer()
+    start_metrics = Unicode()
+    end_metrics = Unicode()
 
     def save(self):
-        """Save the experiment in the db.
-        """
-        pass
+        session = self.model.session
+        attrs = []
+        for k in ExperimentDBModel.__table__.columns:
+            if not (k.primary_key or k.foreign_keys):
+                attrs.append(k.name)
+        self.instance = ExperimentDBModel(model=self.model.instance.id)
+        for attr in attrs:
+            setattr(self.instance, attr, getattr(self, attr))
+        session.add(self.instance)
+        session.commit()
+
+    def save_history(self):
+        df = pd.DataFrame.from_dict(self.model.model.history.history)
+        session = self.model.session
+        for i, metric in enumerate(df.to_dict(orient='records')):
+            inst = HistoryModel(experiment=self.instance.id, epoch=i + 1,
+                                metrics=json.dumps(metric))
+            session.add(inst)
+        session.commit()
+
+    def run(self, method, *args, **kwargs):
+        self.start_time = datetime.now()
+        if isinstance(method, str):
+            method = getattr(self.model.model, method)
+        sig = signature(method)
+        self.n_epochs = kwargs.get(
+            'epochs', sig.parameters['epochs'].default)
+        h = method(*args, **kwargs)
+        self.end_time = datetime.now()
+        start_metrics = {}
+        end_metrics = {}
+        for k, v in h.history.items():
+            start_metrics[k] = v[0]
+            end_metrics[k] = v[-1]
+        self.start_metrics = json.dumps(start_metrics)
+        self.end_metrics = json.dumps(end_metrics)
+        self.save()
+        self.save_history()

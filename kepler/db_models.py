@@ -26,8 +26,11 @@ class ModelDBModel(KeplerBase):
 
     id = Column(Integer, primary_key=True)
     weights_path = Column(String)
-    model_definition = Column(String)
     created = Column(DateTime)
+    model_specs = Column(String)
+    n_layers = Column(Integer)
+    n_params = Column(Integer)
+    keras_type = Column(String)
 
     def __repr__(self):
         return 'Some model ID: ' + str(self.id)
@@ -48,6 +51,9 @@ class ExperimentDBModel(KeplerBase):
     id = Column(Integer, primary_key=True)
     start_time = Column(DateTime)
     end_time = Column(DateTime)
+    n_epochs = Column(Integer)
+    start_metrics = Column(String)
+    end_metrics = Column(String)
     model = Column(Integer, ForeignKey('models.id'))
 
     def __repr__(self):
@@ -68,6 +74,8 @@ class HistoryModel(KeplerBase):
 
     id = Column(Integer, primary_key=True)
     experiment = Column(Integer, ForeignKey('experiments.id'))
+    epoch = Column(Integer)
+    metrics = Column(String)
 
     def __repr__(self):
         return 'Some history log ID: ' + str(self.id)
