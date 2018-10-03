@@ -19,12 +19,12 @@ import pandas as pd
 from h5py import File as H5File
 from scipy.sparse import vstack
 from sklearn.base import BaseEstimator
-from sklearn.metrics import pairwise_distances
+from sklearn.metrics.pairwise import cosine_similarity
 from sqlalchemy.orm import sessionmaker
 from traitlets import (Dict, Enum, HasTraits, Instance, Integer,  # noqa: F401
                        Tuple, Unicode, Union)
 
-from kepler.custom_traits import KerasModelWeights, KerasYamlSpec
+from kepler.custom_traits import KerasModelWeights, File
 from kepler.db_models import ExperimentDBModel, HistoryModel, ModelDBModel
 from kepler.utils import (count_params, get_engine, load_config,
                           load_model_arch_mat, model_representation,
@@ -50,9 +50,11 @@ class ModelInspector(HasTraits):
 
     weights_path = KerasModelWeights()
 
-    model_summary = KerasYamlSpec()
+    model_summary = File()
 
     keras_type = Unicode()
+
+    archmat_index = Integer()
 
     def __init__(self, *args, **kwargs):
         """
@@ -103,12 +105,12 @@ class ModelInspector(HasTraits):
             if not op.isdir(specs_dir):
                 os.makedirs(specs_dir)
             outpath = op.join(specs_dir, str(uid) + '.txt')
-            def _summary_writer(x, fh):
+            def _summary_writer(x, fh):  # noqaL E306
                 fh.write(x + '\n')
             with open(outpath, 'w') as fout:
                 self.model.summary(print_fn=partial(_summary_writer, fh=fout))
-            self.model_specs = outpath
-    
+            self.model_summary = outpath
+
     def write_model_arch_vector(self, x=None):
         if not x:
             x = model_representation(self.model)
@@ -117,6 +119,7 @@ class ModelInspector(HasTraits):
             X = x
         else:
             X = vstack((X, x))
+        self.archmat_index = X.shape[0] - 1
         write_model_arch_mat(X)
 
     def __enter__(self):
@@ -128,14 +131,15 @@ class ModelInspector(HasTraits):
         # Added just as an example
         # self.model.fit = self.check_fit_for_overfitting(self.model.fit)
         self.write_model_summary()
-        self.write_model_arch_vector()
         config = load_config()
         if config.get('models', 'enable_model_search'):
-            self.search()
+            x = model_representation(self.model)
+            self.search(x)
         return self
 
     def __exit__(self, _type, value, traceback):
         self.model.fit = self.oldfit
+        self.write_model_arch_vector()
         self.save()
 
     def save(self):
@@ -149,16 +153,18 @@ class ModelInspector(HasTraits):
         self.session.add(self.instance)
         self.session.commit()
         self.session.close()
-    
-    def search(self, prompt=True):
-        x = model_representation(self.model)
+
+    def search(self, x=None, prompt=True):
+        if x is None:
+            x = model_representation(self.model)
         X = load_model_arch_mat()
-        d = pairwise_distances(x, X, metric='cosine').ravel()
+        if X is None:  # nothing to search against
+            return
+        d = cosine_similarity(x, X).ravel()
         thresh = load_config().get('misc', 'model_sim_tol')
-        d = d < float(thresh)
+        d = d > float(thresh)
         if np.any(d):
             indices, = np.where(d)
-            indices += 1
             if prompt:
                 n_similar = d.sum()
                 print('There are {} models similar to this one.'.format(n_similar))
@@ -172,16 +178,19 @@ class ModelInspector(HasTraits):
                     if not op.isdir(summary_preview_dir):
                         os.makedirs(summary_preview_dir)
                     for summary_file in self.get_summaries(indices):
-                        os.symlink(summary_file, op.join(summary_preview_dir, summary_file))
+                        os.symlink(summary_file,
+                                   op.join(summary_preview_dir,
+                                           op.basename(summary_file)))
             continue_training = input('Continue training? [y|N]: ')
             if continue_training.lower() in ('', 'no', 'N'):
                 import sys
                 sys.exit()
             return indices
-    
+
     def get_summaries(self, indices):
-        q = self.session.query(self.instance.__class__)
-        for inst in q.filter(self.instance.__class__.id.in_(indices)):
+        klass = self.instance.__class__
+        q = self.session.query(klass)
+        for inst in q.filter(klass.archmat_index.in_(indices.tolist())):
             yield inst.model_summary
 
     def get_experiment(self):

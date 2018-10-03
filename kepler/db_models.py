@@ -31,6 +31,7 @@ class ModelDBModel(KeplerBase):
     n_layers = Column(Integer)
     n_params = Column(Integer)
     keras_type = Column(String)
+    archmat_index = Column(Integer)
 
     def __repr__(self):
         return 'Some model ID: ' + str(self.id)

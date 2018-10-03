@@ -82,7 +82,7 @@ def get_model_vectorizer(path=None):
         path = config.get('models', 'vectorizer')
     path = op.expanduser(path)
     return joblib.load(path)
-    
+
 
 def init_config(path):
     path = op.expanduser(path)

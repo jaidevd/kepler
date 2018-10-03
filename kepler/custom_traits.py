@@ -18,10 +18,10 @@ class KerasModelWeights(Unicode):
         return value
 
 
-class KerasYamlSpec(Unicode):
+class File(Unicode):
 
     def validate(self, obj, value):
-        super(KerasYamlSpec, self).validate(obj, value)
+        super(File, self).validate(obj, value)
         if value:
             if not op.isfile(value):
                 raise TraitError('File {} does not exist.')
