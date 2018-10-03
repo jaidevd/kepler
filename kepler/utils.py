@@ -17,7 +17,9 @@ from keras import layers as L
 from keras.engine.base_layer import Layer
 from keras.engine.training import Model
 from keras.utils.layer_utils import count_params as k_count_params
+from scipy.io import mmread, mmwrite
 from sklearn.feature_extraction import DictVectorizer
+from sklearn.externals import joblib
 from sqlalchemy import create_engine
 import yaml
 
@@ -33,10 +35,6 @@ def get_keras_layers():
         except TypeError:
             continue
     return layers
-
-
-LAYERS = get_keras_layers()
-LAYER_DV = DictVectorizer().fit([dict.fromkeys(LAYERS, 0)])
 
 
 def load_config():
@@ -64,6 +62,27 @@ def initdb(path, metadata=None):
     engine = get_engine(path)
     KeplerBase.metadata.create_all(engine)
 
+
+def init_model_vectorizer(path=None):
+    if path is None:
+        config = load_config()
+        path = config.get('models', 'vectorizer')
+    path = op.expanduser(path)
+    model_config_dir = op.dirname(path)
+    if not op.isdir(model_config_dir):
+        os.makedirs(model_config_dir)
+    layers = get_keras_layers()
+    layer_dv = DictVectorizer().fit([dict.fromkeys(layers, 0)])
+    joblib.dump(layer_dv, path)
+
+
+def get_model_vectorizer(path=None):
+    if path is None:
+        config = load_config()
+        path = config.get('models', 'vectorizer')
+    path = op.expanduser(path)
+    return joblib.load(path)
+    
 
 def init_config(path):
     path = op.expanduser(path)
@@ -125,7 +144,7 @@ def layer_architecture(model):
     return layer_config
 
 
-def model_representation(model, dv=LAYER_DV):
+def model_representation(model, dv=None):
     """Get a sparse vector representation of a model.
 
     Arguments:
@@ -141,4 +160,24 @@ def model_representation(model, dv=LAYER_DV):
             spec = yaml.load(model)
         model = layer_architecture(spec)
     layer_counts = count_layer_types(model)
+    if not dv:
+        dv = get_model_vectorizer()
     return dv.transform(layer_counts)
+
+
+def load_model_arch_mat(path=None):
+    if path is None:
+        config = load_config()
+        path = config.get('models', 'model_archs')
+    path = op.expanduser(path)
+    if not op.isfile(path):
+        return
+    return mmread(path)
+
+
+def write_model_arch_mat(X, path=None):
+    if path is None:
+        config = load_config()
+        path = config.get('models', 'model_archs')
+    path = op.expanduser(path)
+    mmwrite(path, X)

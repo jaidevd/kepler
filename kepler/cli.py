@@ -10,7 +10,7 @@
 import os
 import os.path as op
 import click
-from kepler.utils import initdb, init_config
+from kepler.utils import initdb, init_config, init_model_vectorizer
 
 
 @click.group()
@@ -26,6 +26,7 @@ def init(path):
         os.mkdir(path)
     init_config(path)
     initdb(path)
+    init_model_vectorizer()
 
 
 main.add_command(init)

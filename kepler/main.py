@@ -6,26 +6,30 @@ Kepler.
 """
 
 import json
-from inspect import signature
 import os
 import os.path as op
 import warnings
-from uuid import uuid4
 from datetime import datetime
-from functools import wraps
+from functools import wraps, partial
+from inspect import signature
+from uuid import uuid4
 
 import numpy as np  # noqa: F401
 import pandas as pd
 from h5py import File as H5File
-from keras.models import Model
+from scipy.sparse import vstack
 from sklearn.base import BaseEstimator
+from sklearn.metrics import pairwise_distances
 from sqlalchemy.orm import sessionmaker
-from traitlets import (Dict, Enum, HasTraits, Instance, Tuple,  # noqa: F401
-                       Unicode, Union, Integer)
+from traitlets import (Dict, Enum, HasTraits, Instance, Integer,  # noqa: F401
+                       Tuple, Unicode, Union)
 
 from kepler.custom_traits import KerasModelWeights, KerasYamlSpec
-from kepler.db_models import ModelDBModel, ExperimentDBModel, HistoryModel
-from kepler.utils import count_params, get_engine, load_config
+from kepler.db_models import ExperimentDBModel, HistoryModel, ModelDBModel
+from kepler.utils import (count_params, get_engine, load_config,
+                          load_model_arch_mat, model_representation,
+                          write_model_arch_mat)
+from keras.models import Model
 
 warnings.simplefilter('always', category=UserWarning)
 
@@ -46,7 +50,7 @@ class ModelInspector(HasTraits):
 
     weights_path = KerasModelWeights()
 
-    model_specs = KerasYamlSpec()
+    model_summary = KerasYamlSpec()
 
     keras_type = Unicode()
 
@@ -55,6 +59,8 @@ class ModelInspector(HasTraits):
         Overwritten from parent to include the created timestamp.
         """
         super(ModelInspector, self).__init__(*args, **kwargs)
+        # overwrite the model.save method to be able to save the model
+        # weightspath here.
         self.created = datetime.now()
 
     @property
@@ -89,17 +95,29 @@ class ModelInspector(HasTraits):
             return fit_method(X, y, *args, **kwargs)
         return overfit_wrapper
 
-    def write_model_spec(self):
-        if not self.model_specs:
+    def write_model_summary(self):
+        if not self.model_summary:
             config = load_config()
             uid = uuid4()
             specs_dir = op.expanduser(config.get('models', 'spec_dir'))
             if not op.isdir(specs_dir):
                 os.makedirs(specs_dir)
-            outpath = op.join(specs_dir, str(uid) + '.yml')
+            outpath = op.join(specs_dir, str(uid) + '.txt')
+            def _summary_writer(x, fh):
+                fh.write(x + '\n')
             with open(outpath, 'w') as fout:
-                fout.write(self.model.to_yaml())
+                self.model.summary(print_fn=partial(_summary_writer, fh=fout))
             self.model_specs = outpath
+    
+    def write_model_arch_vector(self, x=None):
+        if not x:
+            x = model_representation(self.model)
+        X = load_model_arch_mat()
+        if X is None:
+            X = x
+        else:
+            X = vstack((X, x))
+        write_model_arch_mat(X)
 
     def __enter__(self):
         self.instance = ModelDBModel()
@@ -109,7 +127,11 @@ class ModelInspector(HasTraits):
         self.oldfit = self.model.fit
         # Added just as an example
         # self.model.fit = self.check_fit_for_overfitting(self.model.fit)
-        self.write_model_spec()
+        self.write_model_summary()
+        self.write_model_arch_vector()
+        config = load_config()
+        if config.get('models', 'enable_model_search'):
+            self.search()
         return self
 
     def __exit__(self, _type, value, traceback):
@@ -127,6 +149,40 @@ class ModelInspector(HasTraits):
         self.session.add(self.instance)
         self.session.commit()
         self.session.close()
+    
+    def search(self, prompt=True):
+        x = model_representation(self.model)
+        X = load_model_arch_mat()
+        d = pairwise_distances(x, X, metric='cosine').ravel()
+        thresh = load_config().get('misc', 'model_sim_tol')
+        d = d < float(thresh)
+        if np.any(d):
+            indices, = np.where(d)
+            indices += 1
+            if prompt:
+                n_similar = d.sum()
+                print('There are {} models similar to this one.'.format(n_similar))
+                see_archs = input(' Would you like to see their summaries? [Y|n] ')
+                if see_archs.lower() == 'y':
+                    summary_preview_dir = op.join(os.getcwd(), 'model-summaries')
+                    print('Enter location for summaries [{}]: '.format(summary_preview_dir))
+                    user_choice = input('>>> ')
+                    if user_choice:
+                        summary_preview_dir = user_choice
+                    if not op.isdir(summary_preview_dir):
+                        os.makedirs(summary_preview_dir)
+                    for summary_file in self.get_summaries(indices):
+                        os.symlink(summary_file, op.join(summary_preview_dir, summary_file))
+            continue_training = input('Continue training? [y|N]: ')
+            if continue_training.lower() in ('', 'no', 'N'):
+                import sys
+                sys.exit()
+            return indices
+    
+    def get_summaries(self, indices):
+        q = self.session.query(self.instance.__class__)
+        for inst in q.filter(self.instance.__class__.id.in_(indices)):
+            yield inst.model_summary
 
     def get_experiment(self):
         return Experiment(model=self)

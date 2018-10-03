@@ -27,7 +27,7 @@ class ModelDBModel(KeplerBase):
     id = Column(Integer, primary_key=True)
     weights_path = Column(String)
     created = Column(DateTime)
-    model_specs = Column(String)
+    model_summary = Column(String)
     n_layers = Column(Integer)
     n_params = Column(Integer)
     keras_type = Column(String)
