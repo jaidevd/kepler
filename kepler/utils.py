@@ -17,6 +17,7 @@ from keras import layers as L
 from keras.engine.base_layer import Layer
 from keras.engine.training import Model
 from keras.utils.layer_utils import count_params as k_count_params
+import numpy as np
 from scipy.io import mmread, mmwrite
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.externals import joblib
@@ -181,3 +182,31 @@ def write_model_arch_mat(X, path=None):
         path = config.get('models', 'model_archs')
     path = op.expanduser(path)
     mmwrite(path, X)
+
+
+def binary_prompt(msg, default='y'):
+    y = 'y yes'.split()
+    n = 'n no'.split()
+    if default.lower() in y:
+        choices = '[Y/n]'
+    elif default.lower() in n:
+        choices = '[y/N]'
+    output = input(' '.join((msg, choices, ':')))
+    while output.lower() not in y + n:
+        output = input(' '.join((msg, choices, ':')))
+    return output.lower() in y
+
+
+def is_1d(x):
+    return x.ndim == 1 or (x.ndim == 2 and 1 in x.shape)
+
+
+def is_onehotencoded(x):
+    if x.ndim != 2:
+        return False
+    fractional, integral = np.modf(x)
+    if fractional.sum() != 0:
+        return False
+    if not np.array_equal(integral, integral.astype(bool)):
+        return False
+    return np.all(integral.sum(axis=1) == 1)

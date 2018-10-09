@@ -28,7 +28,7 @@ from kepler.custom_traits import KerasModelWeights, File
 from kepler.db_models import ExperimentDBModel, HistoryModel, ModelDBModel
 from kepler.utils import (count_params, get_engine, load_config,
                           load_model_arch_mat, model_representation,
-                          write_model_arch_mat)
+                          write_model_arch_mat, binary_prompt)
 from keras.models import Model
 
 warnings.simplefilter('always', category=UserWarning)
@@ -168,8 +168,9 @@ class ModelInspector(HasTraits):
             if prompt:
                 n_similar = d.sum()
                 print('There are {} models similar to this one.'.format(n_similar))
-                see_archs = input(' Would you like to see their summaries? [Y|n] ')
-                if see_archs.lower() == 'y':
+                see_archs = binary_prompt(
+                    'Would you like to see their summaries?')
+                if see_archs:
                     summary_preview_dir = op.join(os.getcwd(), 'model-summaries')
                     print('Enter location for summaries [{}]: '.format(summary_preview_dir))
                     user_choice = input('>>> ')
@@ -181,8 +182,8 @@ class ModelInspector(HasTraits):
                         os.symlink(summary_file,
                                    op.join(summary_preview_dir,
                                            op.basename(summary_file)))
-            continue_training = input('Continue training? [y|N]: ')
-            if continue_training.lower() in ('', 'no', 'N'):
+            continue_training = binary_prompt('Continue training?')
+            if not continue_training:
                 import sys
                 sys.exit()
             return indices
@@ -190,7 +191,8 @@ class ModelInspector(HasTraits):
     def get_summaries(self, indices):
         klass = self.instance.__class__
         q = self.session.query(klass)
-        for inst in q.filter(klass.archmat_index.in_(indices.tolist())):
+        for inst in q.filter(klass.archmat_index.in_(map(lambda x: x.item(),
+                                                         indices))):
             yield inst.model_summary
 
     def get_experiment(self):
