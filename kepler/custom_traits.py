@@ -1,7 +1,6 @@
 import os.path as op
-from traitlets import Unicode, HasTraits, TraitError
-from keras.models import Sequential
-from keras import layers as L
+from traitlets import Unicode, TraitError, List
+from keras.models import Model
 from h5py import File as H5File
 
 
@@ -28,20 +27,14 @@ class File(Unicode):
         return value
 
 
-class MyTestClass(HasTraits):
+class KerasModelMethods(List):
 
-    foo = KerasModelWeights()
-
-
-def main():
-    model = Sequential()
-    model.add(L.Dense(32, input_shape=(64,)))
-    model.add(L.Activation('sigmoid'))
-    model.add(L.Dense(10))
-    model.add(L.Activation('sigmoid'))
-    model.save('/tmp/foo.h5')
-    MyTestClass(foo='/tmp/foo.h5')
-
-
-if __name__ == '__main__':
-    main()
+    def validate(self, obj, values):
+        super(KerasModelMethods, self).validate(obj, values)
+        for method_name in values:
+            func = getattr(Model, method_name, False)
+            if callable(func):
+                continue
+            else:
+                raise TraitError(method_name + ' is not a keras Model method.')
+        return values

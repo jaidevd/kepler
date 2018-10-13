@@ -10,8 +10,8 @@ import os
 import os.path as op
 import warnings
 from datetime import datetime
-from functools import wraps, partial
-from inspect import signature
+from functools import partial
+from inspect import isclass
 from uuid import uuid4
 
 import numpy as np  # noqa: F401
@@ -24,22 +24,17 @@ from sqlalchemy.orm import sessionmaker
 from traitlets import (Dict, Enum, HasTraits, Instance, Integer,  # noqa: F401
                        Tuple, Unicode, Union)
 
-from kepler.custom_traits import KerasModelWeights, File
+from kepler.custom_traits import KerasModelWeights, File, KerasModelMethods
 from kepler.db_models import ExperimentDBModel, HistoryModel, ModelDBModel
 from kepler.utils import (count_params, get_engine, load_config,
                           load_model_arch_mat, model_representation,
                           write_model_arch_mat, binary_prompt)
 from keras.models import Model
+from kepler import checks as C
 
 warnings.simplefilter('always', category=UserWarning)
 
 engine = get_engine()
-
-
-class Project(HasTraits):
-    """An ML project."""
-
-    problem_type = Enum('classification', 'regression')
 
 
 class ModelInspector(HasTraits):
@@ -86,17 +81,6 @@ class ModelInspector(HasTraits):
     def n_layers(self):
         return sum([c.trainable for c in self.model.layers])
 
-    def check_fit_for_overfitting(self, fit_method):
-        """Checks if the fit method might be overfitting."""
-        @wraps(fit_method)
-        def overfit_wrapper(X, y, *args, **kwargs):
-            # Is this a standalone `model` or same as `self.model`?
-            nrows = X.shape[0]
-            if nrows < self.n_params:
-                warnings.warn('You might overfit!')
-            return fit_method(X, y, *args, **kwargs)
-        return overfit_wrapper
-
     def write_model_summary(self):
         if not self.model_summary:
             config = load_config()
@@ -105,7 +89,7 @@ class ModelInspector(HasTraits):
             if not op.isdir(specs_dir):
                 os.makedirs(specs_dir)
             outpath = op.join(specs_dir, str(uid) + '.txt')
-            def _summary_writer(x, fh):  # noqaL E306
+            def _summary_writer(x, fh):  # noqa: E306
                 fh.write(x + '\n')
             with open(outpath, 'w') as fout:
                 self.model.summary(print_fn=partial(_summary_writer, fh=fout))
@@ -127,18 +111,17 @@ class ModelInspector(HasTraits):
         self.session = sessionmaker(bind=engine)()
         self.session.add(self.instance)
         self.session.commit()
-        self.oldfit = self.model.fit
-        # Added just as an example
-        # self.model.fit = self.check_fit_for_overfitting(self.model.fit)
         self.write_model_summary()
         config = load_config()
         if config.get('models', 'enable_model_search'):
             x = model_representation(self.model)
             self.search(x)
-        return self
+        self.model_proxy = ModelProxy(self.model, self)
+        self.model_proxy.setUp()
+        return self.model_proxy
 
     def __exit__(self, _type, value, traceback):
-        self.model.fit = self.oldfit
+        self.model_proxy.tearDown()
         self.write_model_arch_vector()
         self.save()
 
@@ -195,8 +178,47 @@ class ModelInspector(HasTraits):
                                                          indices))):
             yield inst.model_summary
 
-    def get_experiment(self):
-        return Experiment(model=self)
+
+class ModelProxy(HasTraits):
+
+    wrapped = KerasModelMethods(['fit', 'train_on_batch'])
+
+    def __init__(self, model, caller=None):
+        self.model = model
+        self.caller = caller
+
+    def register_checks(self):
+        available_checks = []
+        for attr in dir(C):
+            obj = getattr(C, attr)
+            if isclass(obj):
+                if issubclass(obj, C.BaseCheck):
+                    available_checks.append(obj())
+        for func in self.wrapped:
+            setattr(self.model, func, C.checker(getattr(self.model, func),
+                                                available_checks))
+            setattr(self, func, getattr(self.model, func))
+
+    def setUp(self):
+        self.orgfuncs = {func: getattr(self.model, func) for func in self.wrapped}
+        self.register_checks()
+        self.start_experiment()
+        return self.model
+
+    def tearDown(self):
+        self.end_experiment()
+        for funcname, orgfunc in self.orgfuncs.items():
+            setattr(self.model, funcname, orgfunc)
+
+    def start_experiment(self):
+        self.experiment = Experiment(model=self.caller)
+        self.experiment.start_time = datetime.now()
+
+    def end_experiment(self):
+        self.experiment.end_time = datetime.now()
+        self.experiment.process_history()
+        self.experiment.save()
+        self.experiment.save_history()
 
 
 class Experiment(HasTraits):
@@ -231,21 +253,13 @@ class Experiment(HasTraits):
             session.add(inst)
         session.commit()
 
-    def run(self, method, *args, **kwargs):
-        self.start_time = datetime.now()
-        if isinstance(method, str):
-            method = getattr(self.model.model, method)
-        sig = signature(method)
-        self.n_epochs = kwargs.get(
-            'epochs', sig.parameters['epochs'].default)
-        h = method(*args, **kwargs)
-        self.end_time = datetime.now()
+    def process_history(self):
+        h = self.model.model.history.history
         start_metrics = {}
         end_metrics = {}
-        for k, v in h.history.items():
+        for k, v in h.items():
             start_metrics[k] = v[0]
             end_metrics[k] = v[-1]
         self.start_metrics = json.dumps(start_metrics)
         self.end_metrics = json.dumps(end_metrics)
-        self.save()
-        self.save_history()
+        self.n_epochs = len(v)
