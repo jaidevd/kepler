@@ -28,6 +28,7 @@ from kepler.db_models import KeplerBase
 
 
 def get_keras_layers():
+    """Get a list of all available layers in Keras."""
     layers = []
     for attr in dir(L):
         try:
@@ -39,6 +40,7 @@ def get_keras_layers():
 
 
 def load_config():
+    """Load Kepler config."""
     config_dir = os.environ.get('KEPLER_HOME', False)
     if not config_dir:
         config_dir = op.expanduser('~/.kepler')
@@ -48,7 +50,15 @@ def load_config():
     return config
 
 
-def initdb(path, metadata=None):
+def initdb(path):
+    """Initialize the Kepler db.
+
+    Parameters
+    ----------
+
+    path : str
+        Destination path of the sqlite db.
+    """
     if op.isdir(path):
         path = op.join(path, 'kepler.db')
     with sqlite3.connect(path) as conn:
@@ -65,6 +75,16 @@ def initdb(path, metadata=None):
 
 
 def init_model_vectorizer(path=None):
+    """Create and save a sklearn DictVectorizer that can vectorize keras model
+    architectures.
+
+    Parameters
+    ----------
+
+    path : str, optional
+        Path to which the serialized vectorizer will be dumped. If unspecified,
+        this value defaults to the ('models', 'vectorizer') config option.
+    """
     if path is None:
         config = load_config()
         path = config.get('models', 'vectorizer')
@@ -78,6 +98,19 @@ def init_model_vectorizer(path=None):
 
 
 def get_model_vectorizer(path=None):
+    """Load the model vectorizer.
+
+    Parameters
+    ----------
+
+    path : str, optional
+        Location from which to load the model vectorizer. If unspecified,
+        defaults to the ('models', 'vectorizer') config option.
+
+    Returns
+    -------
+    sklearn.feature_extraction.dict_vectorizer.DictVectorizer
+    """
     if path is None:
         config = load_config()
         path = config.get('models', 'vectorizer')
@@ -86,6 +119,14 @@ def get_model_vectorizer(path=None):
 
 
 def init_config(path):
+    """Write the initial Kepler configuration.
+
+    Parameters
+    ----------
+
+    path : str
+        Path to which to write the config.
+    """
     path = op.expanduser(path)
     if op.isdir(path):
         path = op.join(path, 'config.ini')
@@ -94,16 +135,26 @@ def init_config(path):
 
 
 def get_engine(dbpath=None):
-    """
-    Get an SQLAlchemy engine configured from the ~/.kepler/config.ini file.
+    """Get an SQLAlchemy engine configured from the ~/.kepler/config.ini file.
 
+    Parameters
+    ----------
+
+    dbpath : str, optional
+        Path from which to read the db. If unspecified, defaults to the
+        ('default', 'db') config option.
+
+    Returns
+    -------
+    sqlalchemy.engine.base.Engine
     """
     if not dbpath:
         config = load_config()
         try:
             dbpath = config.get('default', 'db')
         except (NoOptionError, NoSectionError):
-            dbpath = op.join(os.environ.get('KEPLER_HOME', '~/.kepler'), 'kepler.db')
+            dbpath = op.join(os.environ.get('KEPLER_HOME', '~/.kepler'),
+                             'kepler.db')
             dbpath = op.abspath(dbpath)
         dbpath = op.expanduser(dbpath)
     return create_engine('sqlite:///' + op.abspath(dbpath))
@@ -114,6 +165,19 @@ def is_power2(n):
 
 
 def count_params(model):
+    """Count the trainable parameters in a Keras model.
+
+    Parameters
+    ----------
+
+    model : keras.engine.training.Model
+        A Keras model.
+
+    Returns
+    -------
+    int
+        Number of trainable parameters in the model.
+    """
     model._check_trainable_weights_consistency()
     tw = getattr(model, '_collected_trainable_weights',
                  model.trainable_weights)
@@ -121,12 +185,40 @@ def count_params(model):
 
 
 def count_layers(model, trainable_only=True):
+    """Count the number of layers in a Keras model.
+
+    Parameters
+    ----------
+
+    model : keras.engine.training.Model
+        A Keras model.
+    trainable_only : bool, optional
+        Whether to count only trainable layers.
+
+    Returns
+    -------
+    int
+        Number of layers in the model.
+    """
     if trainable_only:
         return sum([c.trainable for c in model.layers])
     return len(model.layers)
 
 
 def count_layer_types(model):
+    """Count layers by layer type.
+
+    Parameters
+    ----------
+
+    model : keras.engine.training.Model
+        A Keras model.
+
+    Returns
+    -------
+    collections.Counter
+        Counter object containing number of layers in the model by layer type.
+    """
     if isinstance(model, Model):
         layer_counts = Counter([c.__class__.__name__ for c in model.layers])
     else:
@@ -135,6 +227,23 @@ def count_layer_types(model):
 
 
 def layer_architecture(model):
+    """Get a Keras model config as a dictionary.
+
+    Strip all info like layer names that are not essential to the definition of
+    the model.
+
+    Parameters
+    ----------
+
+    model : dict or keras.engine.training.Model
+        A Keras model or a dict representing the config of the model (result of
+        `model.get_config()`)
+
+    Returns
+    -------
+    dict
+        The model configuration dict stripped of useless details.
+    """
     if isinstance(model, dict):
         layer_config = model['config']['layers']
     else:
@@ -167,6 +276,22 @@ def model_representation(model, dv=None):
 
 
 def load_model_arch_mat(path=None):
+    """Load the model architecture matrix.
+
+    Parameters
+    ----------
+
+    path : str, optional
+        Path from which to read the matrix. If unspecified, defaults to the
+        ('models', 'model_archs') config options.
+
+    Returns
+    -------
+    sparse matrix
+        A sparse matrix with each row a model and each column a layer type.
+        The elements of the matrix represent how many layers of a given type
+        are present in a model.
+    """
     if path is None:
         config = load_config()
         path = config.get('models', 'model_archs')
@@ -177,6 +302,19 @@ def load_model_arch_mat(path=None):
 
 
 def write_model_arch_mat(X, path=None):
+    """Save the model architecture matrix to disk.
+
+    Parameters
+    ----------
+
+    X : sparse matrix
+        A sparse matrix with each row a model and each column a layer type.
+        The elements of the matrix represent how many layers of a given type
+        are present in a model.
+    path : str, optional
+        Path to which to write the matrix. If unspecified, defaults to the
+        ('models', 'model_archs') config options.
+    """
     if path is None:
         config = load_config()
         path = config.get('models', 'model_archs')
@@ -185,6 +323,21 @@ def write_model_arch_mat(X, path=None):
 
 
 def binary_prompt(msg, default='y'):
+    """A yes/no prompt.
+
+    Parameters
+    ----------
+
+    msg : str
+        The message to print at the prompt.
+    default : str, optional
+        Default result of the prompt.
+
+    Returns
+    -------
+    bool
+        Whether the prompt resulted in a 'yes'.
+    """
     y = 'y yes'.split()
     n = 'n no'.split()
     if default.lower() in y:
@@ -192,16 +345,42 @@ def binary_prompt(msg, default='y'):
     elif default.lower() in n:
         choices = '[y/N]'
     output = input(' '.join((msg, choices, ':')))
-    while output.lower() not in y + n:
+    while output.lower() not in (y + n, ''):
         output = input(' '.join((msg, choices, ':')))
+    if not output:
+        return default.lower() == 'y'
     return output.lower() in y
 
 
 def is_1d(x):
+    """If input is a column or row vector or an array.
+
+    Parameters
+    ----------
+
+    x : array-like
+
+    Returns
+    -------
+    bool
+        Whether `x` is 1D.
+    """
     return x.ndim == 1 or (x.ndim == 2 and 1 in x.shape)
 
 
 def is_onehotencoded(x):
+    """If input is a one-hot encoded representation of some set of values.
+
+    Parameters
+    ----------
+
+    x : array-like
+
+    Returns
+    -------
+    bool
+        Whether `x` is a one-hot encoded / categorical representation.
+    """
     if x.ndim != 2:
         return False
     fractional, integral = np.modf(x)

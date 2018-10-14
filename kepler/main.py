@@ -16,7 +16,6 @@ from uuid import uuid4
 
 import numpy as np  # noqa: F401
 import pandas as pd
-from h5py import File as H5File
 from scipy.sparse import vstack
 from sklearn.base import BaseEstimator
 from sklearn.metrics.pairwise import cosine_similarity
@@ -38,17 +37,28 @@ engine = get_engine()
 
 
 class ModelInspector(HasTraits):
+    """Main entry point to a Kepler session.
 
+    This class orchestrates model logging, inspection, running experiments and
+    saving results.
+    """
+
+    # the keras / sklearn model
     model = Union([Instance(Model), Instance(BaseEstimator)])
 
+    # last git commit associated with the model
     commit = Unicode()
 
+    # path to the saved weights of the model
     weights_path = KerasModelWeights()
 
+    # summary of the model, written to a file
     model_summary = File()
 
+    # Type of model, keras.engine.training.{Model, Sequential}, etc
     keras_type = Unicode()
 
+    # Index of the archmat corresponding to this model.
     archmat_index = Integer()
 
     def __init__(self, *args, **kwargs):
@@ -67,21 +77,20 @@ class ModelInspector(HasTraits):
         return self.model.__class__.__name__
 
     @property
-    def model_config(self):
-        with H5File(self.weights_path, 'r') as fout:
-            config = fout.attrs.get('model_config')
-        config = json.loads(config.decode())
-        return config['config']
-
-    @property
     def n_params(self):
+        """Count number of trainable parameters."""
         return count_params(self.model)
 
     @property
     def n_layers(self):
+        """Number of trainable layers."""
         return sum([c.trainable for c in self.model.layers])
 
     def write_model_summary(self):
+        """Write the model summary to disk.
+
+        The default location is ~/.kepler/models/specs, which is controlled
+        from the ('models', 'spec_dir') config option."""
         if not self.model_summary:
             config = load_config()
             uid = uuid4()
@@ -96,6 +105,16 @@ class ModelInspector(HasTraits):
             self.model_summary = outpath
 
     def write_model_arch_vector(self, x=None):
+        """
+        Write the vectorized representation of the model architecture to the
+        archmat file.
+
+        Parameters
+        ----------
+        x : sparse vector, optional
+            The sparse vector representing a model. If not specified, it is
+            calculated for the current model.
+        """
         if not x:
             x = model_representation(self.model)
         X = load_model_arch_mat()
@@ -107,6 +126,13 @@ class ModelInspector(HasTraits):
         write_model_arch_mat(X)
 
     def __enter__(self):
+        """Setup a Kepler session by:
+
+        1. adding the current model to the db
+        2. saving the model summary
+        3. searching for similar models
+        4. creating a modelproxy for the user to work with
+        """
         self.instance = ModelDBModel()
         self.session = sessionmaker(bind=engine)()
         self.session.add(self.instance)
@@ -121,16 +147,20 @@ class ModelInspector(HasTraits):
         return self.model_proxy
 
     def __exit__(self, _type, value, traceback):
+        """Teardown the Kepler session by:
+
+        1. undoing the modelproxy
+        2. writing the model architecture to the archmat
+        3. saving the model metadata to the db.
+        """
         self.model_proxy.tearDown()
         self.write_model_arch_vector()
         self.save()
 
     def save(self):
-        """
-        Save the model details to the Kepler db.
-
-        """
-        attrs = [k.name for k in ModelDBModel.__table__.columns if not k.primary_key]
+        """Save the model details to the Kepler db."""
+        table_columns = ModelDBModel.__table__.columns
+        attrs = [k.name for k in table_columns if not k.primary_key]
         for attr in attrs:
             setattr(self.instance, attr, getattr(self, attr))
         self.session.add(self.instance)
@@ -138,6 +168,17 @@ class ModelInspector(HasTraits):
         self.session.close()
 
     def search(self, x=None, prompt=True):
+        """Search the archmat for similar models.
+
+        Parameters
+        ----------
+
+        x : sparse vector, optional
+            The sparse vector to search. If not specified, computed for the
+            current model.
+        prompt : bool, optional
+            Whether to prompt the user if similar models are found.
+        """
         if x is None:
             x = model_representation(self.model)
         X = load_model_arch_mat()
@@ -150,12 +191,15 @@ class ModelInspector(HasTraits):
             indices, = np.where(d)
             if prompt:
                 n_similar = d.sum()
-                print('There are {} models similar to this one.'.format(n_similar))
+                print('There are {} models similar to this one.'.format(
+                    n_similar))
                 see_archs = binary_prompt(
                     'Would you like to see their summaries?')
                 if see_archs:
-                    summary_preview_dir = op.join(os.getcwd(), 'model-summaries')
-                    print('Enter location for summaries [{}]: '.format(summary_preview_dir))
+                    summary_preview_dir = op.join(os.getcwd(),
+                                                  'model-summaries')
+                    print('Enter location for summaries [{}]: '.format(
+                        summary_preview_dir))
                     user_choice = input('>>> ')
                     if user_choice:
                         summary_preview_dir = user_choice
@@ -172,6 +216,24 @@ class ModelInspector(HasTraits):
             return indices
 
     def get_summaries(self, indices):
+        """Iterate over model summaries.
+
+        For models specified in `indices`, iterate over the corresponding
+        `model_summary` column values, which are paths to files containing the
+        model summaries.
+
+        Parameters
+        ----------
+
+        indices : sequence
+            Sequence of DB indices over which to iterate and find the model
+            summaries.
+
+        Yields
+        ------
+        str
+            path to a model summary file
+        """
         klass = self.instance.__class__
         q = self.session.query(klass)
         for inst in q.filter(klass.archmat_index.in_(map(lambda x: x.item(),
@@ -180,7 +242,13 @@ class ModelInspector(HasTraits):
 
 
 class ModelProxy(HasTraits):
+    """Wrapper around Keras models that accommodates hooks into the model API.
 
+    All methods of the model that need to be wrapped are specified in the
+    `wrapped` trait.
+    """
+
+    # Methods to hijack from the Keras model.
     wrapped = KerasModelMethods(['fit', 'train_on_batch'])
 
     def __init__(self, model, caller=None):
@@ -188,6 +256,9 @@ class ModelProxy(HasTraits):
         self.caller = caller
 
     def register_checks(self):
+        """Decorate the `wrapped` methods of the Keras model to register
+        checks and add them to self, so this class can work as a veritable
+        Keras model proxy."""
         available_checks = []
         for attr in dir(C):
             obj = getattr(C, attr)
@@ -200,21 +271,35 @@ class ModelProxy(HasTraits):
             setattr(self, func, getattr(self.model, func))
 
     def setUp(self):
-        self.orgfuncs = {func: getattr(self.model, func) for func in self.wrapped}
+        """Setup the modelproxy by:
+
+        1. Copying `wrapped` model methods for re-assignment later.
+        2. Decorate these methods to register checks.
+        3. Start an `Experiment` session.
+        """
+        self.orgfuncs = {f: getattr(self.model, f) for f in self.wrapped}
         self.register_checks()
         self.start_experiment()
         return self.model
 
     def tearDown(self):
+        """Teardown the model proxy by:
+
+        1. Ending the `Experiment` session.
+        2. Un-decorating the `wrapped` methods by adding the original methods
+        back to the keras models.
+        """
         self.end_experiment()
         for funcname, orgfunc in self.orgfuncs.items():
             setattr(self.model, funcname, orgfunc)
 
     def start_experiment(self):
+        """Start an `Experiment` session."""
         self.experiment = Experiment(model=self.caller)
         self.experiment.start_time = datetime.now()
 
     def end_experiment(self):
+        """End an `Experiment` session and save results to the db."""
         self.experiment.end_time = datetime.now()
         self.experiment.process_history()
         self.experiment.save()
@@ -223,16 +308,21 @@ class ModelProxy(HasTraits):
 
 class Experiment(HasTraits):
 
+    # The ModelInspector instance that controls this instance.
     model = Instance(ModelInspector)
 
-    # what's in an experiment?
     start_time = Instance(datetime)
     end_time = Instance(datetime)
+
+    # number of epochs for which the experiment ran
     n_epochs = Integer()
+
+    # Keras metrics at the beginning and end of the experiment
     start_metrics = Unicode()
     end_metrics = Unicode()
 
     def save(self):
+        """Save the experiment instance to the db."""
         session = self.model.session
         attrs = []
         for k in ExperimentDBModel.__table__.columns:
@@ -245,6 +335,7 @@ class Experiment(HasTraits):
         session.commit()
 
     def save_history(self):
+        """Save the experiment history to the db."""
         df = pd.DataFrame.from_dict(self.model.model.history.history)
         session = self.model.session
         for i, metric in enumerate(df.to_dict(orient='records')):
@@ -254,6 +345,8 @@ class Experiment(HasTraits):
         session.commit()
 
     def process_history(self):
+        """Parse the history attribute of the fitted model to extract
+        attributes for the db."""
         h = self.model.model.history.history
         start_metrics = {}
         end_metrics = {}

@@ -4,20 +4,8 @@ from keras.models import Model
 from h5py import File as H5File
 
 
-class KerasModelWeights(Unicode):
-
-    def validate(self, obj, value):
-        """Overwritten from parent to ensure that the string is path to a valid keras model.
-        """
-        super(KerasModelWeights, self).validate(obj, value)
-        if value:
-            with H5File(value, 'r') as f_in:
-                if 'model_config' not in f_in.attrs:
-                    raise TraitError('Path {} does not contain a valid keras model.'.format(value))
-        return value
-
-
 class File(Unicode):
+    """Trait representing a file."""
 
     def validate(self, obj, value):
         super(File, self).validate(obj, value)
@@ -27,7 +15,25 @@ class File(Unicode):
         return value
 
 
+class KerasModelWeights(File):
+    """A file containing Keras model weights."""
+
+    def validate(self, obj, value):
+        """Overwritten from parent to ensure that the string is path to a
+        valid keras model.
+        """
+        super(KerasModelWeights, self).validate(obj, value)
+        if value:
+            with H5File(value, 'r') as f_in:
+                if 'model_config' not in f_in.attrs:
+                    raise TraitError(
+                        '{} does not contain a valid keras model.'.format(
+                            value))
+        return value
+
+
 class KerasModelMethods(List):
+    """List trait containing keras model method names."""
 
     def validate(self, obj, values):
         super(KerasModelMethods, self).validate(obj, values)
