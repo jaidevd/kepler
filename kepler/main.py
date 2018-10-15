@@ -10,7 +10,6 @@ import os
 import os.path as op
 import warnings
 from datetime import datetime
-from functools import partial
 from inspect import isclass
 from uuid import uuid4
 
@@ -20,6 +19,7 @@ from scipy.sparse import vstack
 from sklearn.base import BaseEstimator
 from sklearn.metrics.pairwise import cosine_similarity
 from sqlalchemy.orm import sessionmaker
+import tensorflow as tf
 from traitlets import (Dict, Enum, HasTraits, Instance, Integer,  # noqa: F401
                        Tuple, Unicode, Union)
 
@@ -28,7 +28,8 @@ from kepler.db_models import ExperimentDBModel, HistoryModel, ModelDBModel
 from kepler.utils import (count_params, get_engine, load_config,
                           load_model_arch_mat, model_representation,
                           write_model_arch_mat, binary_prompt)
-from keras.models import Model
+from keras import backend as K
+from keras.models import Model, model_from_yaml
 from kepler import checks as C
 
 warnings.simplefilter('always', category=UserWarning)
@@ -52,8 +53,8 @@ class ModelInspector(HasTraits):
     # path to the saved weights of the model
     weights_path = KerasModelWeights()
 
-    # summary of the model, written to a file
-    model_summary = File()
+    # Yaml config of the model, written to a file
+    model_config = File()
 
     # Type of model, keras.engine.training.{Model, Sequential}, etc
     keras_type = Unicode()
@@ -86,23 +87,21 @@ class ModelInspector(HasTraits):
         """Number of trainable layers."""
         return sum([c.trainable for c in self.model.layers])
 
-    def write_model_summary(self):
-        """Write the model summary to disk.
+    def write_model_config(self):
+        """Write the model's config to a yaml file.
 
         The default location is ~/.kepler/models/specs, which is controlled
         from the ('models', 'spec_dir') config option."""
-        if not self.model_summary:
+        if not self.model_config:
             config = load_config()
             uid = uuid4()
             specs_dir = op.expanduser(config.get('models', 'spec_dir'))
             if not op.isdir(specs_dir):
                 os.makedirs(specs_dir)
             outpath = op.join(specs_dir, str(uid) + '.txt')
-            def _summary_writer(x, fh):  # noqa: E306
-                fh.write(x + '\n')
             with open(outpath, 'w') as fout:
-                self.model.summary(print_fn=partial(_summary_writer, fh=fout))
-            self.model_summary = outpath
+                fout.write(self.model.to_yaml())
+            self.model_config = outpath
 
     def write_model_arch_vector(self, x=None):
         """
@@ -129,7 +128,7 @@ class ModelInspector(HasTraits):
         """Setup a Kepler session by:
 
         1. adding the current model to the db
-        2. saving the model summary
+        2. saving the model config
         3. searching for similar models
         4. creating a modelproxy for the user to work with
         """
@@ -137,7 +136,7 @@ class ModelInspector(HasTraits):
         self.session = sessionmaker(bind=engine)()
         self.session.add(self.instance)
         self.session.commit()
-        self.write_model_summary()
+        self.write_model_config()
         config = load_config()
         if config.get('models', 'enable_model_search'):
             x = model_representation(self.model)
@@ -194,32 +193,30 @@ class ModelInspector(HasTraits):
                 print('There are {} models similar to this one.'.format(
                     n_similar))
                 see_archs = binary_prompt(
-                    'Would you like to see their summaries?')
+                    'Would you like to see their graphs?')
                 if see_archs:
-                    summary_preview_dir = op.join(os.getcwd(),
-                                                  'model-summaries')
-                    print('Enter location for summaries [{}]: '.format(
-                        summary_preview_dir))
+                    tf_logdir = load_config().get('models', 'tensorflow_logdir')
+                    print('Enter location for saving graphs [{}]: '.format(
+                        tf_logdir))
                     user_choice = input('>>> ')
                     if user_choice:
-                        summary_preview_dir = user_choice
-                    if not op.isdir(summary_preview_dir):
-                        os.makedirs(summary_preview_dir)
-                    for summary_file in self.get_summaries(indices):
-                        os.symlink(summary_file,
-                                   op.join(summary_preview_dir,
-                                           op.basename(summary_file)))
+                        tf_logdir = user_choice
+                    tf_logdir = op.expanduser(tf_logdir)
+                    with GraphWriter(logdir=tf_logdir) as gw:
+                        gw.write_graphs(self.get_model_configs(indices))
+                    print('Graphs written to ' + tf_logdir)
+                    print('Please point Tensorboard to ' + tf_logdir)
             continue_training = binary_prompt('Continue training?')
             if not continue_training:
                 import sys
                 sys.exit()
             return indices
 
-    def get_summaries(self, indices):
-        """Iterate over model summaries.
+    def get_model_configs(self, indices):
+        """Iterate over model config files.
 
         For models specified in `indices`, iterate over the corresponding
-        `model_summary` column values, which are paths to files containing the
+        `model_config` column values, which are paths to files containing the
         model summaries.
 
         Parameters
@@ -232,13 +229,13 @@ class ModelInspector(HasTraits):
         Yields
         ------
         str
-            path to a model summary file
+            path to a yaml file containing the config of a model
         """
         klass = self.instance.__class__
         q = self.session.query(klass)
         for inst in q.filter(klass.archmat_index.in_(map(lambda x: x.item(),
                                                          indices))):
-            yield inst.model_summary
+            yield inst.model_config
 
 
 class ModelProxy(HasTraits):
@@ -356,3 +353,27 @@ class Experiment(HasTraits):
         self.start_metrics = json.dumps(start_metrics)
         self.end_metrics = json.dumps(end_metrics)
         self.n_epochs = len(v)
+
+
+class GraphWriter(object):
+
+    def __init__(self, logdir):
+        self.logdir = logdir
+
+    def __enter__(self):
+        self.orgsession = K.get_session()
+        return self
+
+    def write_graphs(self, modelspecs):
+        for spec in modelspecs:
+            with tf.Session() as sess:
+                K.set_session(sess)
+                with open(spec, 'r') as mspec:
+                    model = model_from_yaml(mspec.read())  # noqa: F841
+                subdir = op.splitext(op.basename(spec))[0]
+                with tf.summary.FileWriter(op.join(self.logdir, subdir),
+                                           sess.graph) as fw:
+                    fw.flush()
+
+    def __exit__(self, a, b, c):
+        K.set_session(self.orgsession)

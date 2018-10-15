@@ -24,9 +24,8 @@ def main():
     y = digits['target']
     xtrain, xtest, ytrain, ytest = train_test_split(X, y, stratify=y)
     ytrain, ytest = map(to_categorical, (ytrain, ytest))
-    with ModelInspector(model=model) as mi:  # noqa
-        experiment = mi.get_experiment()
-        experiment.run('fit', xtrain, ytrain, validation_data=(xtest, ytest), epochs=10)
+    with ModelInspector(model=model) as mp:  # noqa
+        mp.fit(xtrain, ytrain, validation_data=(xtest, ytest), epochs=10)
 
 
 if __name__ == '__main__':
