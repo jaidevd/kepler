@@ -1,0 +1,3108 @@
+backend: tensorflow
+class_name: Model
+config:
+  input_layers:
+  - [input_14, 0, 0]
+  layers:
+  - class_name: InputLayer
+    config:
+      batch_input_shape: !!python/tuple [null, 224, 224, 3]
+      dtype: float32
+      name: input_14
+      sparse: false
+    inbound_nodes: []
+    name: input_14
+  - class_name: ZeroPadding2D
+    config:
+      data_format: channels_last
+      name: conv1_pad
+      padding: !!python/tuple
+      - !!python/tuple [0, 1]
+      - !!python/tuple [0, 1]
+      trainable: true
+    inbound_nodes:
+    - - - input_14
+        - 0
+        - 0
+        - {}
+    name: conv1_pad
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: &id003 !!python/tuple [1, 1]
+      filters: 32
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [3, 3]
+      name: conv1
+      padding: valid
+      strides: !!python/tuple [2, 2]
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv1_pad
+        - 0
+        - 0
+        - {}
+    name: conv1
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv1_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv1
+        - 0
+        - 0
+        - {}
+    name: conv1_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - &id001 !!python/name:numpy.ndarray ''
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - &id002 !!python/object/apply:numpy.dtype
+          args: [f4, 0, 1]
+          state: !!python/tuple [3, <, null, null, null, -1, -1, 0]
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv1_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv1_bn
+        - 0
+        - 0
+        - {}
+    name: conv1_relu
+  - class_name: DepthwiseConv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      depth_multiplier: 1
+      depthwise_constraint: null
+      depthwise_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      depthwise_regularizer: null
+      dilation_rate: *id003
+      kernel_size: &id004 !!python/tuple [3, 3]
+      name: conv_dw_1
+      padding: same
+      strides: &id007 !!python/tuple [1, 1]
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv1_relu
+        - 0
+        - 0
+        - {}
+    name: conv_dw_1
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_dw_1_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_1
+        - 0
+        - 0
+        - {}
+    name: conv_dw_1_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_dw_1_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_1_bn
+        - 0
+        - 0
+        - {}
+    name: conv_dw_1_relu
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id003
+      filters: 64
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: &id005 !!python/tuple [1, 1]
+      name: conv_pw_1
+      padding: same
+      strides: &id006 !!python/tuple [1, 1]
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_dw_1_relu
+        - 0
+        - 0
+        - {}
+    name: conv_pw_1
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_pw_1_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_1
+        - 0
+        - 0
+        - {}
+    name: conv_pw_1_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_pw_1_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_1_bn
+        - 0
+        - 0
+        - {}
+    name: conv_pw_1_relu
+  - class_name: ZeroPadding2D
+    config:
+      data_format: channels_last
+      name: conv_pad_2
+      padding: !!python/tuple
+      - &id008 !!python/tuple [0, 1]
+      - &id009 !!python/tuple [0, 1]
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_1_relu
+        - 0
+        - 0
+        - {}
+    name: conv_pad_2
+  - class_name: DepthwiseConv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      depth_multiplier: 1
+      depthwise_constraint: null
+      depthwise_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      depthwise_regularizer: null
+      dilation_rate: *id003
+      kernel_size: *id004
+      name: conv_dw_2
+      padding: valid
+      strides: !!python/tuple [2, 2]
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_pad_2
+        - 0
+        - 0
+        - {}
+    name: conv_dw_2
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_dw_2_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_2
+        - 0
+        - 0
+        - {}
+    name: conv_dw_2_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_dw_2_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_2_bn
+        - 0
+        - 0
+        - {}
+    name: conv_dw_2_relu
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id003
+      filters: 128
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id005
+      name: conv_pw_2
+      padding: same
+      strides: *id006
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_dw_2_relu
+        - 0
+        - 0
+        - {}
+    name: conv_pw_2
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_pw_2_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_2
+        - 0
+        - 0
+        - {}
+    name: conv_pw_2_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_pw_2_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_2_bn
+        - 0
+        - 0
+        - {}
+    name: conv_pw_2_relu
+  - class_name: DepthwiseConv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      depth_multiplier: 1
+      depthwise_constraint: null
+      depthwise_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      depthwise_regularizer: null
+      dilation_rate: *id003
+      kernel_size: *id004
+      name: conv_dw_3
+      padding: same
+      strides: *id007
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_pw_2_relu
+        - 0
+        - 0
+        - {}
+    name: conv_dw_3
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_dw_3_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_3
+        - 0
+        - 0
+        - {}
+    name: conv_dw_3_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_dw_3_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_3_bn
+        - 0
+        - 0
+        - {}
+    name: conv_dw_3_relu
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id003
+      filters: 128
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id005
+      name: conv_pw_3
+      padding: same
+      strides: *id006
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_dw_3_relu
+        - 0
+        - 0
+        - {}
+    name: conv_pw_3
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_pw_3_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_3
+        - 0
+        - 0
+        - {}
+    name: conv_pw_3_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_pw_3_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_3_bn
+        - 0
+        - 0
+        - {}
+    name: conv_pw_3_relu
+  - class_name: ZeroPadding2D
+    config:
+      data_format: channels_last
+      name: conv_pad_4
+      padding: !!python/tuple
+      - *id008
+      - *id009
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_3_relu
+        - 0
+        - 0
+        - {}
+    name: conv_pad_4
+  - class_name: DepthwiseConv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      depth_multiplier: 1
+      depthwise_constraint: null
+      depthwise_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      depthwise_regularizer: null
+      dilation_rate: *id003
+      kernel_size: *id004
+      name: conv_dw_4
+      padding: valid
+      strides: !!python/tuple [2, 2]
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_pad_4
+        - 0
+        - 0
+        - {}
+    name: conv_dw_4
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_dw_4_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_4
+        - 0
+        - 0
+        - {}
+    name: conv_dw_4_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_dw_4_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_4_bn
+        - 0
+        - 0
+        - {}
+    name: conv_dw_4_relu
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id003
+      filters: 256
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id005
+      name: conv_pw_4
+      padding: same
+      strides: *id006
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_dw_4_relu
+        - 0
+        - 0
+        - {}
+    name: conv_pw_4
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_pw_4_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_4
+        - 0
+        - 0
+        - {}
+    name: conv_pw_4_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_pw_4_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_4_bn
+        - 0
+        - 0
+        - {}
+    name: conv_pw_4_relu
+  - class_name: DepthwiseConv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      depth_multiplier: 1
+      depthwise_constraint: null
+      depthwise_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      depthwise_regularizer: null
+      dilation_rate: *id003
+      kernel_size: *id004
+      name: conv_dw_5
+      padding: same
+      strides: *id007
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_pw_4_relu
+        - 0
+        - 0
+        - {}
+    name: conv_dw_5
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_dw_5_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_5
+        - 0
+        - 0
+        - {}
+    name: conv_dw_5_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_dw_5_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_5_bn
+        - 0
+        - 0
+        - {}
+    name: conv_dw_5_relu
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id003
+      filters: 256
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id005
+      name: conv_pw_5
+      padding: same
+      strides: *id006
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_dw_5_relu
+        - 0
+        - 0
+        - {}
+    name: conv_pw_5
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_pw_5_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_5
+        - 0
+        - 0
+        - {}
+    name: conv_pw_5_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_pw_5_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_5_bn
+        - 0
+        - 0
+        - {}
+    name: conv_pw_5_relu
+  - class_name: ZeroPadding2D
+    config:
+      data_format: channels_last
+      name: conv_pad_6
+      padding: !!python/tuple
+      - *id008
+      - *id009
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_5_relu
+        - 0
+        - 0
+        - {}
+    name: conv_pad_6
+  - class_name: DepthwiseConv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      depth_multiplier: 1
+      depthwise_constraint: null
+      depthwise_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      depthwise_regularizer: null
+      dilation_rate: *id003
+      kernel_size: *id004
+      name: conv_dw_6
+      padding: valid
+      strides: !!python/tuple [2, 2]
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_pad_6
+        - 0
+        - 0
+        - {}
+    name: conv_dw_6
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_dw_6_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_6
+        - 0
+        - 0
+        - {}
+    name: conv_dw_6_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_dw_6_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_6_bn
+        - 0
+        - 0
+        - {}
+    name: conv_dw_6_relu
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id003
+      filters: 512
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id005
+      name: conv_pw_6
+      padding: same
+      strides: *id006
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_dw_6_relu
+        - 0
+        - 0
+        - {}
+    name: conv_pw_6
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_pw_6_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_6
+        - 0
+        - 0
+        - {}
+    name: conv_pw_6_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_pw_6_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_6_bn
+        - 0
+        - 0
+        - {}
+    name: conv_pw_6_relu
+  - class_name: DepthwiseConv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      depth_multiplier: 1
+      depthwise_constraint: null
+      depthwise_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      depthwise_regularizer: null
+      dilation_rate: *id003
+      kernel_size: *id004
+      name: conv_dw_7
+      padding: same
+      strides: *id007
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_pw_6_relu
+        - 0
+        - 0
+        - {}
+    name: conv_dw_7
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_dw_7_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_7
+        - 0
+        - 0
+        - {}
+    name: conv_dw_7_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_dw_7_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_7_bn
+        - 0
+        - 0
+        - {}
+    name: conv_dw_7_relu
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id003
+      filters: 512
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id005
+      name: conv_pw_7
+      padding: same
+      strides: *id006
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_dw_7_relu
+        - 0
+        - 0
+        - {}
+    name: conv_pw_7
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_pw_7_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_7
+        - 0
+        - 0
+        - {}
+    name: conv_pw_7_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_pw_7_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_7_bn
+        - 0
+        - 0
+        - {}
+    name: conv_pw_7_relu
+  - class_name: DepthwiseConv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      depth_multiplier: 1
+      depthwise_constraint: null
+      depthwise_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      depthwise_regularizer: null
+      dilation_rate: *id003
+      kernel_size: *id004
+      name: conv_dw_8
+      padding: same
+      strides: *id007
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_pw_7_relu
+        - 0
+        - 0
+        - {}
+    name: conv_dw_8
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_dw_8_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_8
+        - 0
+        - 0
+        - {}
+    name: conv_dw_8_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_dw_8_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_8_bn
+        - 0
+        - 0
+        - {}
+    name: conv_dw_8_relu
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id003
+      filters: 512
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id005
+      name: conv_pw_8
+      padding: same
+      strides: *id006
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_dw_8_relu
+        - 0
+        - 0
+        - {}
+    name: conv_pw_8
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_pw_8_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_8
+        - 0
+        - 0
+        - {}
+    name: conv_pw_8_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_pw_8_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_8_bn
+        - 0
+        - 0
+        - {}
+    name: conv_pw_8_relu
+  - class_name: DepthwiseConv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      depth_multiplier: 1
+      depthwise_constraint: null
+      depthwise_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      depthwise_regularizer: null
+      dilation_rate: *id003
+      kernel_size: *id004
+      name: conv_dw_9
+      padding: same
+      strides: *id007
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_pw_8_relu
+        - 0
+        - 0
+        - {}
+    name: conv_dw_9
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_dw_9_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_9
+        - 0
+        - 0
+        - {}
+    name: conv_dw_9_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_dw_9_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_9_bn
+        - 0
+        - 0
+        - {}
+    name: conv_dw_9_relu
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id003
+      filters: 512
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id005
+      name: conv_pw_9
+      padding: same
+      strides: *id006
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_dw_9_relu
+        - 0
+        - 0
+        - {}
+    name: conv_pw_9
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_pw_9_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_9
+        - 0
+        - 0
+        - {}
+    name: conv_pw_9_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_pw_9_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_9_bn
+        - 0
+        - 0
+        - {}
+    name: conv_pw_9_relu
+  - class_name: DepthwiseConv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      depth_multiplier: 1
+      depthwise_constraint: null
+      depthwise_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      depthwise_regularizer: null
+      dilation_rate: *id003
+      kernel_size: *id004
+      name: conv_dw_10
+      padding: same
+      strides: *id007
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_pw_9_relu
+        - 0
+        - 0
+        - {}
+    name: conv_dw_10
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_dw_10_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_10
+        - 0
+        - 0
+        - {}
+    name: conv_dw_10_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_dw_10_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_10_bn
+        - 0
+        - 0
+        - {}
+    name: conv_dw_10_relu
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id003
+      filters: 512
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id005
+      name: conv_pw_10
+      padding: same
+      strides: *id006
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_dw_10_relu
+        - 0
+        - 0
+        - {}
+    name: conv_pw_10
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_pw_10_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_10
+        - 0
+        - 0
+        - {}
+    name: conv_pw_10_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_pw_10_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_10_bn
+        - 0
+        - 0
+        - {}
+    name: conv_pw_10_relu
+  - class_name: DepthwiseConv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      depth_multiplier: 1
+      depthwise_constraint: null
+      depthwise_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      depthwise_regularizer: null
+      dilation_rate: *id003
+      kernel_size: *id004
+      name: conv_dw_11
+      padding: same
+      strides: *id007
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_pw_10_relu
+        - 0
+        - 0
+        - {}
+    name: conv_dw_11
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_dw_11_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_11
+        - 0
+        - 0
+        - {}
+    name: conv_dw_11_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_dw_11_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_11_bn
+        - 0
+        - 0
+        - {}
+    name: conv_dw_11_relu
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id003
+      filters: 512
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id005
+      name: conv_pw_11
+      padding: same
+      strides: *id006
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_dw_11_relu
+        - 0
+        - 0
+        - {}
+    name: conv_pw_11
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_pw_11_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_11
+        - 0
+        - 0
+        - {}
+    name: conv_pw_11_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_pw_11_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_11_bn
+        - 0
+        - 0
+        - {}
+    name: conv_pw_11_relu
+  - class_name: ZeroPadding2D
+    config:
+      data_format: channels_last
+      name: conv_pad_12
+      padding: !!python/tuple
+      - *id008
+      - *id009
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_11_relu
+        - 0
+        - 0
+        - {}
+    name: conv_pad_12
+  - class_name: DepthwiseConv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      depth_multiplier: 1
+      depthwise_constraint: null
+      depthwise_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      depthwise_regularizer: null
+      dilation_rate: *id003
+      kernel_size: *id004
+      name: conv_dw_12
+      padding: valid
+      strides: !!python/tuple [2, 2]
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_pad_12
+        - 0
+        - 0
+        - {}
+    name: conv_dw_12
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_dw_12_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_12
+        - 0
+        - 0
+        - {}
+    name: conv_dw_12_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_dw_12_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_12_bn
+        - 0
+        - 0
+        - {}
+    name: conv_dw_12_relu
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id003
+      filters: 1024
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id005
+      name: conv_pw_12
+      padding: same
+      strides: *id006
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_dw_12_relu
+        - 0
+        - 0
+        - {}
+    name: conv_pw_12
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_pw_12_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_12
+        - 0
+        - 0
+        - {}
+    name: conv_pw_12_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_pw_12_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_12_bn
+        - 0
+        - 0
+        - {}
+    name: conv_pw_12_relu
+  - class_name: DepthwiseConv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      depth_multiplier: 1
+      depthwise_constraint: null
+      depthwise_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      depthwise_regularizer: null
+      dilation_rate: *id003
+      kernel_size: *id004
+      name: conv_dw_13
+      padding: same
+      strides: *id007
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_pw_12_relu
+        - 0
+        - 0
+        - {}
+    name: conv_dw_13
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_dw_13_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_13
+        - 0
+        - 0
+        - {}
+    name: conv_dw_13_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_dw_13_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_dw_13_bn
+        - 0
+        - 0
+        - {}
+    name: conv_dw_13_relu
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id003
+      filters: 1024
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id005
+      name: conv_pw_13
+      padding: same
+      strides: *id006
+      trainable: true
+      use_bias: false
+    inbound_nodes:
+    - - - conv_dw_13_relu
+        - 0
+        - 0
+        - {}
+    name: conv_pw_13
+  - class_name: BatchNormalization
+    config:
+      axis: -1
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: conv_pw_13_bn
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_13
+        - 0
+        - 0
+        - {}
+    name: conv_pw_13_bn
+  - class_name: ReLU
+    config:
+      max_value: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AADAQA==
+      name: conv_pw_13_relu
+      negative_slope: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      threshold: !!python/object/apply:numpy.core.multiarray._reconstruct
+        args:
+        - *id001
+        - !!python/tuple [0]
+        - !!binary |
+          Yg==
+        state: !!python/tuple
+        - 1
+        - !!python/tuple []
+        - *id002
+        - false
+        - !!binary |
+          AAAAAA==
+      trainable: true
+    inbound_nodes:
+    - - - conv_pw_13_bn
+        - 0
+        - 0
+        - {}
+    name: conv_pw_13_relu
+  - class_name: GlobalAveragePooling2D
+    config: {data_format: channels_last, name: global_average_pooling2d_3, trainable: true}
+    inbound_nodes:
+    - - - conv_pw_13_relu
+        - 0
+        - 0
+        - {}
+    name: global_average_pooling2d_3
+  - class_name: Reshape
+    config:
+      name: reshape_1
+      target_shape: !!python/tuple [1, 1, 1024]
+      trainable: true
+    inbound_nodes:
+    - - - global_average_pooling2d_3
+        - 0
+        - 0
+        - {}
+    name: reshape_1
+  - class_name: Dropout
+    config: {name: dropout, noise_shape: null, rate: 0.001, seed: null, trainable: true}
+    inbound_nodes:
+    - - - reshape_1
+        - 0
+        - 0
+        - {}
+    name: dropout
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id003
+      filters: 1000
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [1, 1]
+      name: conv_preds
+      padding: same
+      strides: !!python/tuple [1, 1]
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - dropout
+        - 0
+        - 0
+        - {}
+    name: conv_preds
+  - class_name: Activation
+    config: {activation: softmax, name: act_softmax, trainable: true}
+    inbound_nodes:
+    - - - conv_preds
+        - 0
+        - 0
+        - {}
+    name: act_softmax
+  - class_name: Reshape
+    config:
+      name: reshape_2
+      target_shape: !!python/tuple [1000]
+      trainable: true
+    inbound_nodes:
+    - - - act_softmax
+        - 0
+        - 0
+        - {}
+    name: reshape_2
+  name: mobilenet_1.00_224
+  output_layers:
+  - [reshape_2, 0, 0]
+keras_version: 2.2.4

@@ -1,0 +1,285 @@
+backend: tensorflow
+class_name: Model
+config:
+  input_layers:
+  - [encoder_input, 0, 0]
+  layers:
+  - class_name: InputLayer
+    config:
+      batch_input_shape: &id001 !!python/tuple [null, 28, 28, 1]
+      dtype: float32
+      name: encoder_input
+      sparse: false
+    inbound_nodes: []
+    name: encoder_input
+  - class_name: Model
+    config:
+      input_layers:
+      - [encoder_input, 0, 0]
+      layers:
+      - class_name: InputLayer
+        config:
+          batch_input_shape: *id001
+          dtype: float32
+          name: encoder_input
+          sparse: false
+        inbound_nodes: []
+        name: encoder_input
+      - class_name: Conv2D
+        config:
+          activation: relu
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: &id002 !!python/tuple [1, 1]
+          filters: 32
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+          kernel_regularizer: null
+          kernel_size: !!python/tuple [3, 3]
+          name: conv2d_1
+          padding: same
+          strides: !!python/tuple [2, 2]
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - encoder_input
+            - 0
+            - 0
+            - {}
+        name: conv2d_1
+      - class_name: Conv2D
+        config:
+          activation: relu
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id002
+          filters: 64
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+          kernel_regularizer: null
+          kernel_size: !!python/tuple [3, 3]
+          name: conv2d_2
+          padding: same
+          strides: !!python/tuple [2, 2]
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - conv2d_1
+            - 0
+            - 0
+            - {}
+        name: conv2d_2
+      - class_name: Flatten
+        config: {data_format: channels_last, name: flatten_1, trainable: true}
+        inbound_nodes:
+        - - - conv2d_2
+            - 0
+            - 0
+            - {}
+        name: flatten_1
+      - class_name: Dense
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+          kernel_regularizer: null
+          name: latent_vector
+          trainable: true
+          units: 16
+          use_bias: true
+        inbound_nodes:
+        - - - flatten_1
+            - 0
+            - 0
+            - {}
+        name: latent_vector
+      name: encoder
+      output_layers:
+      - [latent_vector, 0, 0]
+    inbound_nodes:
+    - - - encoder_input
+        - 0
+        - 0
+        - {}
+    name: encoder
+  - class_name: Model
+    config:
+      input_layers:
+      - [decoder_input, 0, 0]
+      layers:
+      - class_name: InputLayer
+        config:
+          batch_input_shape: !!python/tuple [null, 16]
+          dtype: float32
+          name: decoder_input
+          sparse: false
+        inbound_nodes: []
+        name: decoder_input
+      - class_name: Dense
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+          kernel_regularizer: null
+          name: dense_1
+          trainable: true
+          units: 3136
+          use_bias: true
+        inbound_nodes:
+        - - - decoder_input
+            - 0
+            - 0
+            - {}
+        name: dense_1
+      - class_name: Reshape
+        config:
+          name: reshape_1
+          target_shape: !!python/tuple [7, 7, 64]
+          trainable: true
+        inbound_nodes:
+        - - - dense_1
+            - 0
+            - 0
+            - {}
+        name: reshape_1
+      - class_name: Conv2DTranspose
+        config:
+          activation: relu
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: &id003 !!python/tuple [1, 1]
+          filters: 64
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+          kernel_regularizer: null
+          kernel_size: !!python/tuple [3, 3]
+          name: conv2d_transpose_1
+          output_padding: null
+          padding: same
+          strides: !!python/tuple [2, 2]
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - reshape_1
+            - 0
+            - 0
+            - {}
+        name: conv2d_transpose_1
+      - class_name: Conv2DTranspose
+        config:
+          activation: relu
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id003
+          filters: 32
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+          kernel_regularizer: null
+          kernel_size: !!python/tuple [3, 3]
+          name: conv2d_transpose_2
+          output_padding: null
+          padding: same
+          strides: !!python/tuple [2, 2]
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - conv2d_transpose_1
+            - 0
+            - 0
+            - {}
+        name: conv2d_transpose_2
+      - class_name: Conv2DTranspose
+        config:
+          activation: linear
+          activity_regularizer: null
+          bias_constraint: null
+          bias_initializer:
+            class_name: Zeros
+            config: {}
+          bias_regularizer: null
+          data_format: channels_last
+          dilation_rate: *id003
+          filters: 1
+          kernel_constraint: null
+          kernel_initializer:
+            class_name: VarianceScaling
+            config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+          kernel_regularizer: null
+          kernel_size: !!python/tuple [3, 3]
+          name: conv2d_transpose_3
+          output_padding: null
+          padding: same
+          strides: !!python/tuple [1, 1]
+          trainable: true
+          use_bias: true
+        inbound_nodes:
+        - - - conv2d_transpose_2
+            - 0
+            - 0
+            - {}
+        name: conv2d_transpose_3
+      - class_name: Activation
+        config: {activation: sigmoid, name: decoder_output, trainable: true}
+        inbound_nodes:
+        - - - conv2d_transpose_3
+            - 0
+            - 0
+            - {}
+        name: decoder_output
+      name: decoder
+      output_layers:
+      - [decoder_output, 0, 0]
+    inbound_nodes:
+    - - - encoder
+        - 1
+        - 0
+        - {}
+    name: decoder
+  name: autoencoder
+  output_layers:
+  - [decoder, 1, 0]
+keras_version: 2.2.4

@@ -1,0 +1,58 @@
+backend: tensorflow
+class_name: Sequential
+config:
+  layers:
+  - class_name: SimpleRNN
+    config:
+      activation: relu
+      activity_regularizer: null
+      batch_input_shape: !!python/tuple [null, 784, 1]
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      dropout: 0.0
+      dtype: float32
+      go_backwards: false
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: RandomNormal
+        config: {mean: 0.0, seed: null, stddev: 0.001}
+      kernel_regularizer: null
+      name: simple_rnn_1
+      recurrent_constraint: null
+      recurrent_dropout: 0.0
+      recurrent_initializer:
+        class_name: Identity
+        config: {gain: 1.0}
+      recurrent_regularizer: null
+      return_sequences: false
+      return_state: false
+      stateful: false
+      trainable: true
+      units: 100
+      unroll: false
+      use_bias: true
+  - class_name: Dense
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      kernel_regularizer: null
+      name: dense_1
+      trainable: true
+      units: 10
+      use_bias: true
+  - class_name: Activation
+    config: {activation: softmax, name: activation_1, trainable: true}
+  name: sequential_1
+keras_version: 2.2.4

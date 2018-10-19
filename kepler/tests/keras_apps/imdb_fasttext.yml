@@ -1,0 +1,42 @@
+backend: tensorflow
+class_name: Sequential
+config:
+  layers:
+  - class_name: Embedding
+    config:
+      activity_regularizer: null
+      batch_input_shape: !!python/tuple [null, 400]
+      dtype: float32
+      embeddings_constraint: null
+      embeddings_initializer:
+        class_name: RandomUniform
+        config: {maxval: 0.05, minval: -0.05, seed: null}
+      embeddings_regularizer: null
+      input_dim: 20000
+      input_length: 400
+      mask_zero: false
+      name: embedding_1
+      output_dim: 50
+      trainable: true
+  - class_name: GlobalAveragePooling1D
+    config: {data_format: channels_last, name: global_average_pooling1d_1, trainable: true}
+  - class_name: Dense
+    config:
+      activation: sigmoid
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      kernel_regularizer: null
+      name: dense_1
+      trainable: true
+      units: 1
+      use_bias: true
+  name: sequential_1
+keras_version: 2.2.4

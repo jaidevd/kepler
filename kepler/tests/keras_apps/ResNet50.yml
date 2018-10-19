@@ -1,0 +1,3856 @@
+backend: tensorflow
+class_name: Model
+config:
+  input_layers:
+  - [input_18, 0, 0]
+  layers:
+  - class_name: InputLayer
+    config:
+      batch_input_shape: !!python/tuple [null, 224, 224, 3]
+      dtype: float32
+      name: input_18
+      sparse: false
+    inbound_nodes: []
+    name: input_18
+  - class_name: ZeroPadding2D
+    config:
+      data_format: channels_last
+      name: conv1_pad
+      padding: !!python/tuple
+      - !!python/tuple [3, 3]
+      - !!python/tuple [3, 3]
+      trainable: true
+    inbound_nodes:
+    - - - input_18
+        - 0
+        - 0
+        - {}
+    name: conv1_pad
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: &id001 !!python/tuple [1, 1]
+      filters: 64
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [7, 7]
+      name: conv1
+      padding: valid
+      strides: !!python/tuple [2, 2]
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - conv1_pad
+        - 0
+        - 0
+        - {}
+    name: conv1
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn_conv1
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - conv1
+        - 0
+        - 0
+        - {}
+    name: bn_conv1
+  - class_name: Activation
+    config: {activation: relu, name: activation_1230, trainable: true}
+    inbound_nodes:
+    - - - bn_conv1
+        - 0
+        - 0
+        - {}
+    name: activation_1230
+  - class_name: MaxPooling2D
+    config:
+      data_format: channels_last
+      name: max_pooling2d_17
+      padding: valid
+      pool_size: !!python/tuple [3, 3]
+      strides: !!python/tuple [2, 2]
+      trainable: true
+    inbound_nodes:
+    - - - activation_1230
+        - 0
+        - 0
+        - {}
+    name: max_pooling2d_17
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 64
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: &id009 !!python/tuple [1, 1]
+      name: res2a_branch2a
+      padding: valid
+      strides: &id003 !!python/tuple [1, 1]
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - max_pooling2d_17
+        - 0
+        - 0
+        - {}
+    name: res2a_branch2a
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn2a_branch2a
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res2a_branch2a
+        - 0
+        - 0
+        - {}
+    name: bn2a_branch2a
+  - class_name: Activation
+    config: {activation: relu, name: activation_1231, trainable: true}
+    inbound_nodes:
+    - - - bn2a_branch2a
+        - 0
+        - 0
+        - {}
+    name: activation_1231
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 64
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [3, 3]
+      name: res2a_branch2b
+      padding: same
+      strides: &id002 !!python/tuple [1, 1]
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1231
+        - 0
+        - 0
+        - {}
+    name: res2a_branch2b
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn2a_branch2b
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res2a_branch2b
+        - 0
+        - 0
+        - {}
+    name: bn2a_branch2b
+  - class_name: Activation
+    config: {activation: relu, name: activation_1232, trainable: true}
+    inbound_nodes:
+    - - - bn2a_branch2b
+        - 0
+        - 0
+        - {}
+    name: activation_1232
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 256
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: &id010 !!python/tuple [1, 1]
+      name: res2a_branch2c
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1232
+        - 0
+        - 0
+        - {}
+    name: res2a_branch2c
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 256
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: &id011 !!python/tuple [1, 1]
+      name: res2a_branch1
+      padding: valid
+      strides: *id003
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - max_pooling2d_17
+        - 0
+        - 0
+        - {}
+    name: res2a_branch1
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn2a_branch2c
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res2a_branch2c
+        - 0
+        - 0
+        - {}
+    name: bn2a_branch2c
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn2a_branch1
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res2a_branch1
+        - 0
+        - 0
+        - {}
+    name: bn2a_branch1
+  - class_name: Add
+    config: {name: add_13, trainable: true}
+    inbound_nodes:
+    - - - bn2a_branch2c
+        - 0
+        - 0
+        - &id004 {}
+      - - bn2a_branch1
+        - 0
+        - 0
+        - *id004
+    name: add_13
+  - class_name: Activation
+    config: {activation: relu, name: activation_1233, trainable: true}
+    inbound_nodes:
+    - - - add_13
+        - 0
+        - 0
+        - {}
+    name: activation_1233
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 64
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: &id006 !!python/tuple [1, 1]
+      name: res2b_branch2a
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1233
+        - 0
+        - 0
+        - {}
+    name: res2b_branch2a
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn2b_branch2a
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res2b_branch2a
+        - 0
+        - 0
+        - {}
+    name: bn2b_branch2a
+  - class_name: Activation
+    config: {activation: relu, name: activation_1234, trainable: true}
+    inbound_nodes:
+    - - - bn2b_branch2a
+        - 0
+        - 0
+        - {}
+    name: activation_1234
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 64
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [3, 3]
+      name: res2b_branch2b
+      padding: same
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1234
+        - 0
+        - 0
+        - {}
+    name: res2b_branch2b
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn2b_branch2b
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res2b_branch2b
+        - 0
+        - 0
+        - {}
+    name: bn2b_branch2b
+  - class_name: Activation
+    config: {activation: relu, name: activation_1235, trainable: true}
+    inbound_nodes:
+    - - - bn2b_branch2b
+        - 0
+        - 0
+        - {}
+    name: activation_1235
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 256
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: &id007 !!python/tuple [1, 1]
+      name: res2b_branch2c
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1235
+        - 0
+        - 0
+        - {}
+    name: res2b_branch2c
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn2b_branch2c
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res2b_branch2c
+        - 0
+        - 0
+        - {}
+    name: bn2b_branch2c
+  - class_name: Add
+    config: {name: add_14, trainable: true}
+    inbound_nodes:
+    - - - bn2b_branch2c
+        - 0
+        - 0
+        - &id005 {}
+      - - activation_1233
+        - 0
+        - 0
+        - *id005
+    name: add_14
+  - class_name: Activation
+    config: {activation: relu, name: activation_1236, trainable: true}
+    inbound_nodes:
+    - - - add_14
+        - 0
+        - 0
+        - {}
+    name: activation_1236
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 64
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id006
+      name: res2c_branch2a
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1236
+        - 0
+        - 0
+        - {}
+    name: res2c_branch2a
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn2c_branch2a
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res2c_branch2a
+        - 0
+        - 0
+        - {}
+    name: bn2c_branch2a
+  - class_name: Activation
+    config: {activation: relu, name: activation_1237, trainable: true}
+    inbound_nodes:
+    - - - bn2c_branch2a
+        - 0
+        - 0
+        - {}
+    name: activation_1237
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 64
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [3, 3]
+      name: res2c_branch2b
+      padding: same
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1237
+        - 0
+        - 0
+        - {}
+    name: res2c_branch2b
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn2c_branch2b
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res2c_branch2b
+        - 0
+        - 0
+        - {}
+    name: bn2c_branch2b
+  - class_name: Activation
+    config: {activation: relu, name: activation_1238, trainable: true}
+    inbound_nodes:
+    - - - bn2c_branch2b
+        - 0
+        - 0
+        - {}
+    name: activation_1238
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 256
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id007
+      name: res2c_branch2c
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1238
+        - 0
+        - 0
+        - {}
+    name: res2c_branch2c
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn2c_branch2c
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res2c_branch2c
+        - 0
+        - 0
+        - {}
+    name: bn2c_branch2c
+  - class_name: Add
+    config: {name: add_15, trainable: true}
+    inbound_nodes:
+    - - - bn2c_branch2c
+        - 0
+        - 0
+        - &id008 {}
+      - - activation_1236
+        - 0
+        - 0
+        - *id008
+    name: add_15
+  - class_name: Activation
+    config: {activation: relu, name: activation_1239, trainable: true}
+    inbound_nodes:
+    - - - add_15
+        - 0
+        - 0
+        - {}
+    name: activation_1239
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 128
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id009
+      name: res3a_branch2a
+      padding: valid
+      strides: &id012 !!python/tuple [2, 2]
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1239
+        - 0
+        - 0
+        - {}
+    name: res3a_branch2a
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn3a_branch2a
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res3a_branch2a
+        - 0
+        - 0
+        - {}
+    name: bn3a_branch2a
+  - class_name: Activation
+    config: {activation: relu, name: activation_1240, trainable: true}
+    inbound_nodes:
+    - - - bn3a_branch2a
+        - 0
+        - 0
+        - {}
+    name: activation_1240
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 128
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [3, 3]
+      name: res3a_branch2b
+      padding: same
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1240
+        - 0
+        - 0
+        - {}
+    name: res3a_branch2b
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn3a_branch2b
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res3a_branch2b
+        - 0
+        - 0
+        - {}
+    name: bn3a_branch2b
+  - class_name: Activation
+    config: {activation: relu, name: activation_1241, trainable: true}
+    inbound_nodes:
+    - - - bn3a_branch2b
+        - 0
+        - 0
+        - {}
+    name: activation_1241
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 512
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id010
+      name: res3a_branch2c
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1241
+        - 0
+        - 0
+        - {}
+    name: res3a_branch2c
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 512
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id011
+      name: res3a_branch1
+      padding: valid
+      strides: *id012
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1239
+        - 0
+        - 0
+        - {}
+    name: res3a_branch1
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn3a_branch2c
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res3a_branch2c
+        - 0
+        - 0
+        - {}
+    name: bn3a_branch2c
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn3a_branch1
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res3a_branch1
+        - 0
+        - 0
+        - {}
+    name: bn3a_branch1
+  - class_name: Add
+    config: {name: add_16, trainable: true}
+    inbound_nodes:
+    - - - bn3a_branch2c
+        - 0
+        - 0
+        - &id013 {}
+      - - bn3a_branch1
+        - 0
+        - 0
+        - *id013
+    name: add_16
+  - class_name: Activation
+    config: {activation: relu, name: activation_1242, trainable: true}
+    inbound_nodes:
+    - - - add_16
+        - 0
+        - 0
+        - {}
+    name: activation_1242
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 128
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id006
+      name: res3b_branch2a
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1242
+        - 0
+        - 0
+        - {}
+    name: res3b_branch2a
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn3b_branch2a
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res3b_branch2a
+        - 0
+        - 0
+        - {}
+    name: bn3b_branch2a
+  - class_name: Activation
+    config: {activation: relu, name: activation_1243, trainable: true}
+    inbound_nodes:
+    - - - bn3b_branch2a
+        - 0
+        - 0
+        - {}
+    name: activation_1243
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 128
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [3, 3]
+      name: res3b_branch2b
+      padding: same
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1243
+        - 0
+        - 0
+        - {}
+    name: res3b_branch2b
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn3b_branch2b
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res3b_branch2b
+        - 0
+        - 0
+        - {}
+    name: bn3b_branch2b
+  - class_name: Activation
+    config: {activation: relu, name: activation_1244, trainable: true}
+    inbound_nodes:
+    - - - bn3b_branch2b
+        - 0
+        - 0
+        - {}
+    name: activation_1244
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 512
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id007
+      name: res3b_branch2c
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1244
+        - 0
+        - 0
+        - {}
+    name: res3b_branch2c
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn3b_branch2c
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res3b_branch2c
+        - 0
+        - 0
+        - {}
+    name: bn3b_branch2c
+  - class_name: Add
+    config: {name: add_17, trainable: true}
+    inbound_nodes:
+    - - - bn3b_branch2c
+        - 0
+        - 0
+        - &id014 {}
+      - - activation_1242
+        - 0
+        - 0
+        - *id014
+    name: add_17
+  - class_name: Activation
+    config: {activation: relu, name: activation_1245, trainable: true}
+    inbound_nodes:
+    - - - add_17
+        - 0
+        - 0
+        - {}
+    name: activation_1245
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 128
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id006
+      name: res3c_branch2a
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1245
+        - 0
+        - 0
+        - {}
+    name: res3c_branch2a
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn3c_branch2a
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res3c_branch2a
+        - 0
+        - 0
+        - {}
+    name: bn3c_branch2a
+  - class_name: Activation
+    config: {activation: relu, name: activation_1246, trainable: true}
+    inbound_nodes:
+    - - - bn3c_branch2a
+        - 0
+        - 0
+        - {}
+    name: activation_1246
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 128
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [3, 3]
+      name: res3c_branch2b
+      padding: same
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1246
+        - 0
+        - 0
+        - {}
+    name: res3c_branch2b
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn3c_branch2b
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res3c_branch2b
+        - 0
+        - 0
+        - {}
+    name: bn3c_branch2b
+  - class_name: Activation
+    config: {activation: relu, name: activation_1247, trainable: true}
+    inbound_nodes:
+    - - - bn3c_branch2b
+        - 0
+        - 0
+        - {}
+    name: activation_1247
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 512
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id007
+      name: res3c_branch2c
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1247
+        - 0
+        - 0
+        - {}
+    name: res3c_branch2c
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn3c_branch2c
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res3c_branch2c
+        - 0
+        - 0
+        - {}
+    name: bn3c_branch2c
+  - class_name: Add
+    config: {name: add_18, trainable: true}
+    inbound_nodes:
+    - - - bn3c_branch2c
+        - 0
+        - 0
+        - &id015 {}
+      - - activation_1245
+        - 0
+        - 0
+        - *id015
+    name: add_18
+  - class_name: Activation
+    config: {activation: relu, name: activation_1248, trainable: true}
+    inbound_nodes:
+    - - - add_18
+        - 0
+        - 0
+        - {}
+    name: activation_1248
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 128
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id006
+      name: res3d_branch2a
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1248
+        - 0
+        - 0
+        - {}
+    name: res3d_branch2a
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn3d_branch2a
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res3d_branch2a
+        - 0
+        - 0
+        - {}
+    name: bn3d_branch2a
+  - class_name: Activation
+    config: {activation: relu, name: activation_1249, trainable: true}
+    inbound_nodes:
+    - - - bn3d_branch2a
+        - 0
+        - 0
+        - {}
+    name: activation_1249
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 128
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [3, 3]
+      name: res3d_branch2b
+      padding: same
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1249
+        - 0
+        - 0
+        - {}
+    name: res3d_branch2b
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn3d_branch2b
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res3d_branch2b
+        - 0
+        - 0
+        - {}
+    name: bn3d_branch2b
+  - class_name: Activation
+    config: {activation: relu, name: activation_1250, trainable: true}
+    inbound_nodes:
+    - - - bn3d_branch2b
+        - 0
+        - 0
+        - {}
+    name: activation_1250
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 512
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id007
+      name: res3d_branch2c
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1250
+        - 0
+        - 0
+        - {}
+    name: res3d_branch2c
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn3d_branch2c
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res3d_branch2c
+        - 0
+        - 0
+        - {}
+    name: bn3d_branch2c
+  - class_name: Add
+    config: {name: add_19, trainable: true}
+    inbound_nodes:
+    - - - bn3d_branch2c
+        - 0
+        - 0
+        - &id016 {}
+      - - activation_1248
+        - 0
+        - 0
+        - *id016
+    name: add_19
+  - class_name: Activation
+    config: {activation: relu, name: activation_1251, trainable: true}
+    inbound_nodes:
+    - - - add_19
+        - 0
+        - 0
+        - {}
+    name: activation_1251
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 256
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id009
+      name: res4a_branch2a
+      padding: valid
+      strides: *id012
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1251
+        - 0
+        - 0
+        - {}
+    name: res4a_branch2a
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4a_branch2a
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4a_branch2a
+        - 0
+        - 0
+        - {}
+    name: bn4a_branch2a
+  - class_name: Activation
+    config: {activation: relu, name: activation_1252, trainable: true}
+    inbound_nodes:
+    - - - bn4a_branch2a
+        - 0
+        - 0
+        - {}
+    name: activation_1252
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 256
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [3, 3]
+      name: res4a_branch2b
+      padding: same
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1252
+        - 0
+        - 0
+        - {}
+    name: res4a_branch2b
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4a_branch2b
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4a_branch2b
+        - 0
+        - 0
+        - {}
+    name: bn4a_branch2b
+  - class_name: Activation
+    config: {activation: relu, name: activation_1253, trainable: true}
+    inbound_nodes:
+    - - - bn4a_branch2b
+        - 0
+        - 0
+        - {}
+    name: activation_1253
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 1024
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id010
+      name: res4a_branch2c
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1253
+        - 0
+        - 0
+        - {}
+    name: res4a_branch2c
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 1024
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id011
+      name: res4a_branch1
+      padding: valid
+      strides: *id012
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1251
+        - 0
+        - 0
+        - {}
+    name: res4a_branch1
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4a_branch2c
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4a_branch2c
+        - 0
+        - 0
+        - {}
+    name: bn4a_branch2c
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4a_branch1
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4a_branch1
+        - 0
+        - 0
+        - {}
+    name: bn4a_branch1
+  - class_name: Add
+    config: {name: add_20, trainable: true}
+    inbound_nodes:
+    - - - bn4a_branch2c
+        - 0
+        - 0
+        - &id017 {}
+      - - bn4a_branch1
+        - 0
+        - 0
+        - *id017
+    name: add_20
+  - class_name: Activation
+    config: {activation: relu, name: activation_1254, trainable: true}
+    inbound_nodes:
+    - - - add_20
+        - 0
+        - 0
+        - {}
+    name: activation_1254
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 256
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id006
+      name: res4b_branch2a
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1254
+        - 0
+        - 0
+        - {}
+    name: res4b_branch2a
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4b_branch2a
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4b_branch2a
+        - 0
+        - 0
+        - {}
+    name: bn4b_branch2a
+  - class_name: Activation
+    config: {activation: relu, name: activation_1255, trainable: true}
+    inbound_nodes:
+    - - - bn4b_branch2a
+        - 0
+        - 0
+        - {}
+    name: activation_1255
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 256
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [3, 3]
+      name: res4b_branch2b
+      padding: same
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1255
+        - 0
+        - 0
+        - {}
+    name: res4b_branch2b
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4b_branch2b
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4b_branch2b
+        - 0
+        - 0
+        - {}
+    name: bn4b_branch2b
+  - class_name: Activation
+    config: {activation: relu, name: activation_1256, trainable: true}
+    inbound_nodes:
+    - - - bn4b_branch2b
+        - 0
+        - 0
+        - {}
+    name: activation_1256
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 1024
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id007
+      name: res4b_branch2c
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1256
+        - 0
+        - 0
+        - {}
+    name: res4b_branch2c
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4b_branch2c
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4b_branch2c
+        - 0
+        - 0
+        - {}
+    name: bn4b_branch2c
+  - class_name: Add
+    config: {name: add_21, trainable: true}
+    inbound_nodes:
+    - - - bn4b_branch2c
+        - 0
+        - 0
+        - &id018 {}
+      - - activation_1254
+        - 0
+        - 0
+        - *id018
+    name: add_21
+  - class_name: Activation
+    config: {activation: relu, name: activation_1257, trainable: true}
+    inbound_nodes:
+    - - - add_21
+        - 0
+        - 0
+        - {}
+    name: activation_1257
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 256
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id006
+      name: res4c_branch2a
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1257
+        - 0
+        - 0
+        - {}
+    name: res4c_branch2a
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4c_branch2a
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4c_branch2a
+        - 0
+        - 0
+        - {}
+    name: bn4c_branch2a
+  - class_name: Activation
+    config: {activation: relu, name: activation_1258, trainable: true}
+    inbound_nodes:
+    - - - bn4c_branch2a
+        - 0
+        - 0
+        - {}
+    name: activation_1258
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 256
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [3, 3]
+      name: res4c_branch2b
+      padding: same
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1258
+        - 0
+        - 0
+        - {}
+    name: res4c_branch2b
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4c_branch2b
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4c_branch2b
+        - 0
+        - 0
+        - {}
+    name: bn4c_branch2b
+  - class_name: Activation
+    config: {activation: relu, name: activation_1259, trainable: true}
+    inbound_nodes:
+    - - - bn4c_branch2b
+        - 0
+        - 0
+        - {}
+    name: activation_1259
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 1024
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id007
+      name: res4c_branch2c
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1259
+        - 0
+        - 0
+        - {}
+    name: res4c_branch2c
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4c_branch2c
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4c_branch2c
+        - 0
+        - 0
+        - {}
+    name: bn4c_branch2c
+  - class_name: Add
+    config: {name: add_22, trainable: true}
+    inbound_nodes:
+    - - - bn4c_branch2c
+        - 0
+        - 0
+        - &id019 {}
+      - - activation_1257
+        - 0
+        - 0
+        - *id019
+    name: add_22
+  - class_name: Activation
+    config: {activation: relu, name: activation_1260, trainable: true}
+    inbound_nodes:
+    - - - add_22
+        - 0
+        - 0
+        - {}
+    name: activation_1260
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 256
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id006
+      name: res4d_branch2a
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1260
+        - 0
+        - 0
+        - {}
+    name: res4d_branch2a
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4d_branch2a
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4d_branch2a
+        - 0
+        - 0
+        - {}
+    name: bn4d_branch2a
+  - class_name: Activation
+    config: {activation: relu, name: activation_1261, trainable: true}
+    inbound_nodes:
+    - - - bn4d_branch2a
+        - 0
+        - 0
+        - {}
+    name: activation_1261
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 256
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [3, 3]
+      name: res4d_branch2b
+      padding: same
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1261
+        - 0
+        - 0
+        - {}
+    name: res4d_branch2b
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4d_branch2b
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4d_branch2b
+        - 0
+        - 0
+        - {}
+    name: bn4d_branch2b
+  - class_name: Activation
+    config: {activation: relu, name: activation_1262, trainable: true}
+    inbound_nodes:
+    - - - bn4d_branch2b
+        - 0
+        - 0
+        - {}
+    name: activation_1262
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 1024
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id007
+      name: res4d_branch2c
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1262
+        - 0
+        - 0
+        - {}
+    name: res4d_branch2c
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4d_branch2c
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4d_branch2c
+        - 0
+        - 0
+        - {}
+    name: bn4d_branch2c
+  - class_name: Add
+    config: {name: add_23, trainable: true}
+    inbound_nodes:
+    - - - bn4d_branch2c
+        - 0
+        - 0
+        - &id020 {}
+      - - activation_1260
+        - 0
+        - 0
+        - *id020
+    name: add_23
+  - class_name: Activation
+    config: {activation: relu, name: activation_1263, trainable: true}
+    inbound_nodes:
+    - - - add_23
+        - 0
+        - 0
+        - {}
+    name: activation_1263
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 256
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id006
+      name: res4e_branch2a
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1263
+        - 0
+        - 0
+        - {}
+    name: res4e_branch2a
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4e_branch2a
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4e_branch2a
+        - 0
+        - 0
+        - {}
+    name: bn4e_branch2a
+  - class_name: Activation
+    config: {activation: relu, name: activation_1264, trainable: true}
+    inbound_nodes:
+    - - - bn4e_branch2a
+        - 0
+        - 0
+        - {}
+    name: activation_1264
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 256
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [3, 3]
+      name: res4e_branch2b
+      padding: same
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1264
+        - 0
+        - 0
+        - {}
+    name: res4e_branch2b
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4e_branch2b
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4e_branch2b
+        - 0
+        - 0
+        - {}
+    name: bn4e_branch2b
+  - class_name: Activation
+    config: {activation: relu, name: activation_1265, trainable: true}
+    inbound_nodes:
+    - - - bn4e_branch2b
+        - 0
+        - 0
+        - {}
+    name: activation_1265
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 1024
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id007
+      name: res4e_branch2c
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1265
+        - 0
+        - 0
+        - {}
+    name: res4e_branch2c
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4e_branch2c
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4e_branch2c
+        - 0
+        - 0
+        - {}
+    name: bn4e_branch2c
+  - class_name: Add
+    config: {name: add_24, trainable: true}
+    inbound_nodes:
+    - - - bn4e_branch2c
+        - 0
+        - 0
+        - &id021 {}
+      - - activation_1263
+        - 0
+        - 0
+        - *id021
+    name: add_24
+  - class_name: Activation
+    config: {activation: relu, name: activation_1266, trainable: true}
+    inbound_nodes:
+    - - - add_24
+        - 0
+        - 0
+        - {}
+    name: activation_1266
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 256
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id006
+      name: res4f_branch2a
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1266
+        - 0
+        - 0
+        - {}
+    name: res4f_branch2a
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4f_branch2a
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4f_branch2a
+        - 0
+        - 0
+        - {}
+    name: bn4f_branch2a
+  - class_name: Activation
+    config: {activation: relu, name: activation_1267, trainable: true}
+    inbound_nodes:
+    - - - bn4f_branch2a
+        - 0
+        - 0
+        - {}
+    name: activation_1267
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 256
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [3, 3]
+      name: res4f_branch2b
+      padding: same
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1267
+        - 0
+        - 0
+        - {}
+    name: res4f_branch2b
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4f_branch2b
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4f_branch2b
+        - 0
+        - 0
+        - {}
+    name: bn4f_branch2b
+  - class_name: Activation
+    config: {activation: relu, name: activation_1268, trainable: true}
+    inbound_nodes:
+    - - - bn4f_branch2b
+        - 0
+        - 0
+        - {}
+    name: activation_1268
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 1024
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id007
+      name: res4f_branch2c
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1268
+        - 0
+        - 0
+        - {}
+    name: res4f_branch2c
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn4f_branch2c
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res4f_branch2c
+        - 0
+        - 0
+        - {}
+    name: bn4f_branch2c
+  - class_name: Add
+    config: {name: add_25, trainable: true}
+    inbound_nodes:
+    - - - bn4f_branch2c
+        - 0
+        - 0
+        - &id022 {}
+      - - activation_1266
+        - 0
+        - 0
+        - *id022
+    name: add_25
+  - class_name: Activation
+    config: {activation: relu, name: activation_1269, trainable: true}
+    inbound_nodes:
+    - - - add_25
+        - 0
+        - 0
+        - {}
+    name: activation_1269
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 512
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id009
+      name: res5a_branch2a
+      padding: valid
+      strides: *id012
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1269
+        - 0
+        - 0
+        - {}
+    name: res5a_branch2a
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn5a_branch2a
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res5a_branch2a
+        - 0
+        - 0
+        - {}
+    name: bn5a_branch2a
+  - class_name: Activation
+    config: {activation: relu, name: activation_1270, trainable: true}
+    inbound_nodes:
+    - - - bn5a_branch2a
+        - 0
+        - 0
+        - {}
+    name: activation_1270
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 512
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [3, 3]
+      name: res5a_branch2b
+      padding: same
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1270
+        - 0
+        - 0
+        - {}
+    name: res5a_branch2b
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn5a_branch2b
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res5a_branch2b
+        - 0
+        - 0
+        - {}
+    name: bn5a_branch2b
+  - class_name: Activation
+    config: {activation: relu, name: activation_1271, trainable: true}
+    inbound_nodes:
+    - - - bn5a_branch2b
+        - 0
+        - 0
+        - {}
+    name: activation_1271
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 2048
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id010
+      name: res5a_branch2c
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1271
+        - 0
+        - 0
+        - {}
+    name: res5a_branch2c
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 2048
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id011
+      name: res5a_branch1
+      padding: valid
+      strides: *id012
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1269
+        - 0
+        - 0
+        - {}
+    name: res5a_branch1
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn5a_branch2c
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res5a_branch2c
+        - 0
+        - 0
+        - {}
+    name: bn5a_branch2c
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn5a_branch1
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res5a_branch1
+        - 0
+        - 0
+        - {}
+    name: bn5a_branch1
+  - class_name: Add
+    config: {name: add_26, trainable: true}
+    inbound_nodes:
+    - - - bn5a_branch2c
+        - 0
+        - 0
+        - &id023 {}
+      - - bn5a_branch1
+        - 0
+        - 0
+        - *id023
+    name: add_26
+  - class_name: Activation
+    config: {activation: relu, name: activation_1272, trainable: true}
+    inbound_nodes:
+    - - - add_26
+        - 0
+        - 0
+        - {}
+    name: activation_1272
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 512
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id006
+      name: res5b_branch2a
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1272
+        - 0
+        - 0
+        - {}
+    name: res5b_branch2a
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn5b_branch2a
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res5b_branch2a
+        - 0
+        - 0
+        - {}
+    name: bn5b_branch2a
+  - class_name: Activation
+    config: {activation: relu, name: activation_1273, trainable: true}
+    inbound_nodes:
+    - - - bn5b_branch2a
+        - 0
+        - 0
+        - {}
+    name: activation_1273
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 512
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [3, 3]
+      name: res5b_branch2b
+      padding: same
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1273
+        - 0
+        - 0
+        - {}
+    name: res5b_branch2b
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn5b_branch2b
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res5b_branch2b
+        - 0
+        - 0
+        - {}
+    name: bn5b_branch2b
+  - class_name: Activation
+    config: {activation: relu, name: activation_1274, trainable: true}
+    inbound_nodes:
+    - - - bn5b_branch2b
+        - 0
+        - 0
+        - {}
+    name: activation_1274
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 2048
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id007
+      name: res5b_branch2c
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1274
+        - 0
+        - 0
+        - {}
+    name: res5b_branch2c
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn5b_branch2c
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res5b_branch2c
+        - 0
+        - 0
+        - {}
+    name: bn5b_branch2c
+  - class_name: Add
+    config: {name: add_27, trainable: true}
+    inbound_nodes:
+    - - - bn5b_branch2c
+        - 0
+        - 0
+        - &id024 {}
+      - - activation_1272
+        - 0
+        - 0
+        - *id024
+    name: add_27
+  - class_name: Activation
+    config: {activation: relu, name: activation_1275, trainable: true}
+    inbound_nodes:
+    - - - add_27
+        - 0
+        - 0
+        - {}
+    name: activation_1275
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 512
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id006
+      name: res5c_branch2a
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1275
+        - 0
+        - 0
+        - {}
+    name: res5c_branch2a
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn5c_branch2a
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res5c_branch2a
+        - 0
+        - 0
+        - {}
+    name: bn5c_branch2a
+  - class_name: Activation
+    config: {activation: relu, name: activation_1276, trainable: true}
+    inbound_nodes:
+    - - - bn5c_branch2a
+        - 0
+        - 0
+        - {}
+    name: activation_1276
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 512
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: !!python/tuple [3, 3]
+      name: res5c_branch2b
+      padding: same
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1276
+        - 0
+        - 0
+        - {}
+    name: res5c_branch2b
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn5c_branch2b
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res5c_branch2b
+        - 0
+        - 0
+        - {}
+    name: bn5c_branch2b
+  - class_name: Activation
+    config: {activation: relu, name: activation_1277, trainable: true}
+    inbound_nodes:
+    - - - bn5c_branch2b
+        - 0
+        - 0
+        - {}
+    name: activation_1277
+  - class_name: Conv2D
+    config:
+      activation: linear
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      data_format: channels_last
+      dilation_rate: *id001
+      filters: 2048
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: normal, mode: fan_in, scale: 2.0, seed: null}
+      kernel_regularizer: null
+      kernel_size: *id007
+      name: res5c_branch2c
+      padding: valid
+      strides: *id002
+      trainable: true
+      use_bias: true
+    inbound_nodes:
+    - - - activation_1277
+        - 0
+        - 0
+        - {}
+    name: res5c_branch2c
+  - class_name: BatchNormalization
+    config:
+      axis: 3
+      beta_constraint: null
+      beta_initializer:
+        class_name: Zeros
+        config: {}
+      beta_regularizer: null
+      center: true
+      epsilon: 0.001
+      gamma_constraint: null
+      gamma_initializer:
+        class_name: Ones
+        config: {}
+      gamma_regularizer: null
+      momentum: 0.99
+      moving_mean_initializer:
+        class_name: Zeros
+        config: {}
+      moving_variance_initializer:
+        class_name: Ones
+        config: {}
+      name: bn5c_branch2c
+      scale: true
+      trainable: true
+    inbound_nodes:
+    - - - res5c_branch2c
+        - 0
+        - 0
+        - {}
+    name: bn5c_branch2c
+  - class_name: Add
+    config: {name: add_28, trainable: true}
+    inbound_nodes:
+    - - - bn5c_branch2c
+        - 0
+        - 0
+        - &id025 {}
+      - - activation_1275
+        - 0
+        - 0
+        - *id025
+    name: add_28
+  - class_name: Activation
+    config: {activation: relu, name: activation_1278, trainable: true}
+    inbound_nodes:
+    - - - add_28
+        - 0
+        - 0
+        - {}
+    name: activation_1278
+  - class_name: AveragePooling2D
+    config:
+      data_format: channels_last
+      name: avg_pool
+      padding: valid
+      pool_size: &id026 !!python/tuple [7, 7]
+      strides: *id026
+      trainable: true
+    inbound_nodes:
+    - - - activation_1278
+        - 0
+        - 0
+        - {}
+    name: avg_pool
+  - class_name: Flatten
+    config: {data_format: channels_last, name: flatten_1, trainable: true}
+    inbound_nodes:
+    - - - avg_pool
+        - 0
+        - 0
+        - {}
+    name: flatten_1
+  - class_name: Dense
+    config:
+      activation: softmax
+      activity_regularizer: null
+      bias_constraint: null
+      bias_initializer:
+        class_name: Zeros
+        config: {}
+      bias_regularizer: null
+      kernel_constraint: null
+      kernel_initializer:
+        class_name: VarianceScaling
+        config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+      kernel_regularizer: null
+      name: fc1000
+      trainable: true
+      units: 1000
+      use_bias: true
+    inbound_nodes:
+    - - - flatten_1
+        - 0
+        - 0
+        - {}
+    name: fc1000
+  name: resnet50
+  output_layers:
+  - [fc1000, 0, 0]
+keras_version: 2.2.4
