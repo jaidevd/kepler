@@ -19,6 +19,7 @@ from keras.engine.training import Model
 from keras.utils.layer_utils import count_params as k_count_params
 import numpy as np
 from scipy.io import mmread, mmwrite
+from scipy.stats import ks_2samp
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
@@ -389,3 +390,22 @@ def is_onehotencoded(x):
     if not np.array_equal(integral, integral.astype(bool)):
         return False
     return np.all(integral.sum(axis=1) == 1)
+
+
+def is_uniform(x):
+    marker = np.random.uniform(x.min(), x.max(), size=(100,))
+    _, pval = ks_2samp(x.ravel(), marker)
+    return pval > 1e-3
+
+
+def is_initializer_uniform(layer):
+    initializer = getattr(layer, 'kernel_initializer', False)
+    if initializer:
+        cname = initializer.__class__.__name__
+        if cname not in ('RandomUniform', 'VarianceScaling'):
+            return False
+        if cname == 'RandomUniform':
+            return True
+        if initializer.distribution == 'uniform':
+            return True
+    return False

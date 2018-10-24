@@ -21,7 +21,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sqlalchemy.orm import sessionmaker
 import tensorflow as tf
 from traitlets import (Dict, Enum, HasTraits, Instance, Integer,  # noqa: F401
-                       Tuple, Unicode, Union)
+                       Tuple, Unicode, Union, Bool, List)
 
 from kepler.custom_traits import KerasModelWeights, File, KerasModelMethods
 from kepler.db_models import ExperimentDBModel, HistoryModel, ModelDBModel
@@ -61,6 +61,12 @@ class ModelInspector(HasTraits):
 
     # Index of the archmat corresponding to this model.
     archmat_index = Integer()
+
+    enable_model_search = Bool()
+
+    checks = List()
+
+    model_checks = List()
 
     def __init__(self, *args, **kwargs):
         """
@@ -138,10 +144,12 @@ class ModelInspector(HasTraits):
         self.session.commit()
         self.write_model_config()
         config = load_config()
-        if config.get('models', 'enable_model_search'):
-            x = model_representation(self.model)
-            self.search(x)
-        self.model_proxy = ModelProxy(self.model, self)
+        if self.enable_model_search:
+            if config.get('models', 'enable_model_search'):
+                x = model_representation(self.model)
+                self.search(x)
+        self.run_model_checks()
+        self.model_proxy = ModelProxy(self.model, self, self.checks)
         self.model_proxy.setUp()
         return self.model_proxy
 
@@ -237,6 +245,18 @@ class ModelInspector(HasTraits):
                                                          indices))):
             yield inst.model_config
 
+    def run_model_checks(self):
+        """Run all checks enabled at the model level."""
+        if not self.model_checks:
+            for attr in dir(C):
+                obj = getattr(C, attr)
+                if isclass(obj):
+                    if issubclass(obj, C.BaseModelCheck):
+                        obj()(self.model)
+        else:
+            for check in self.model_checks:
+                check(self.model)
+
 
 class ModelProxy(HasTraits):
     """Wrapper around Keras models that accommodates hooks into the model API.
@@ -248,23 +268,31 @@ class ModelProxy(HasTraits):
     # Methods to hijack from the Keras model.
     wrapped = KerasModelMethods(['fit', 'train_on_batch'])
 
-    def __init__(self, model, caller=None):
+    def __init__(self, model, caller=None, checks=None, *args, **kwargs):
+        super(ModelProxy, self).__init__(*args, **kwargs)
         self.model = model
         self.caller = caller
+        if checks is not None:
+            self.checks = checks
 
-    def register_checks(self):
+    def register_checks(self, checks=None):
         """Decorate the `wrapped` methods of the Keras model to register
         checks and add them to self, so this class can work as a veritable
         Keras model proxy."""
-        available_checks = []
-        for attr in dir(C):
-            obj = getattr(C, attr)
-            if isclass(obj):
-                if issubclass(obj, C.BaseCheck):
-                    available_checks.append(obj())
+        if checks:
+            self.checks = checks
+        else:
+            if not hasattr(self, 'checks'):
+                checks = []
+                for attr in dir(C):
+                    obj = getattr(C, attr)
+                    if isclass(obj):
+                        if issubclass(obj, C.BaseStartTrainingCheck):
+                            checks.append(obj())
+                self.checks = checks
         for func in self.wrapped:
             setattr(self.model, func, C.checker(getattr(self.model, func),
-                                                available_checks))
+                                                self.checks))
             setattr(self, func, getattr(self.model, func))
 
     def setUp(self):
@@ -298,7 +326,7 @@ class ModelProxy(HasTraits):
     def end_experiment(self):
         """End an `Experiment` session and save results to the db."""
         self.experiment.end_time = datetime.now()
-        self.experiment.process_history()
+        self.experiment.process_history(self.history)
         self.experiment.save()
         self.experiment.save_history()
 
@@ -341,10 +369,11 @@ class Experiment(HasTraits):
             session.add(inst)
         session.commit()
 
-    def process_history(self):
+    def process_history(self, h=None):
         """Parse the history attribute of the fitted model to extract
         attributes for the db."""
-        h = self.model.model.history.history
+        if not h:
+            h = self.model.model.history.history
         start_metrics = {}
         end_metrics = {}
         for k, v in h.items():

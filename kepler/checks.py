@@ -21,27 +21,34 @@ import numpy as np
 from scipy.stats import mode
 from sklearn.decomposition import PCA
 
-from kepler.utils import is_power2, is_1d, is_onehotencoded
+from keras.activations import sigmoid
+from kepler.utils import (is_power2, is_1d, is_onehotencoded,
+                          is_initializer_uniform)
 
 
 def checker(fit_method, checks):
     @wraps(fit_method)
-    def run(X, y, *args, **kwargs):
+    def run(*args, **kwargs):
         for check in checks:
-            check(X, y, *args, **kwargs)
-        return fit_method(X, y, *args, **kwargs)
+            check(*args, **kwargs)
+        return fit_method(*args, **kwargs)
     return run
 
+# Checks that happen at start of training #####################################
 
-class BaseCheck(ABC):
-    """Base class for all checks"""
+
+class BaseStartTrainingCheck(ABC):
+    """Base class for all checks that happen at the beginning of training."""
 
     code = None
     msg = None
+    __type = 'start-training'
 
     @classmethod
     def __subclasshook__(cls, other):
-        return bool(getattr(other, 'code', False))
+        if getattr(other, '__type', '') == cls.__type:
+            return bool(getattr(other, 'code', False))
+        return False
 
     def check(self, X, y, *args, **kwargs):
         """Only supposed to return a boolean."""
@@ -51,14 +58,12 @@ class BaseCheck(ABC):
         """All logging logic goes here."""
         warnings.warn(self.code + ": " + self.msg)
 
-    def __call__(self, X, y, *args, **kwargs):
-        if not self.check(X, y, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
+        if not self.check(*args, **kwargs):
             self.warn()
 
 
-# Minibatch Checks ############################################################
-
-class BadMinibatchSize(BaseCheck):
+class BadMinibatchSize(BaseStartTrainingCheck):
     """BadMinibatchSize"""
 
     code = 'K101'
@@ -74,7 +79,7 @@ class BadMinibatchSize(BaseCheck):
         return is_power2(batch_size)
 
 
-class MinibatchTooSmall(BaseCheck):
+class MinibatchTooSmall(BaseStartTrainingCheck):
     """MinibatchTooSmall"""
 
     code = 'K1010'
@@ -91,7 +96,7 @@ class MinibatchTooSmall(BaseCheck):
         return batch_size / n_samples > 0.0125
 
 
-class MinibatchTooLarge(BaseCheck):
+class MinibatchTooLarge(BaseStartTrainingCheck):
     """MinibatchTooLarge"""
 
     code = 'K1012'
@@ -108,12 +113,12 @@ class MinibatchTooLarge(BaseCheck):
         return batch_size / n_samples < 0.33
 
 
-class DataNotShuffled(BaseCheck):
+class DataNotShuffled(BaseStartTrainingCheck):
     """DataNotShuffled.
     Not sure exactly how one would detect a random ordering of ints."""
 
 
-class TrainDevNotStratified(BaseCheck):
+class TrainDevNotStratified(BaseStartTrainingCheck):
     """TrainDevNotStratified"""
 
     code = 'K103'
@@ -130,8 +135,8 @@ class TrainDevNotStratified(BaseCheck):
         if is_1d(y):
             y_train = y
         elif is_onehotencoded(y):
-            y_train = y.sum(axis=1)
-            y_val = y_val.sum(axis=1)
+            y_train = y.argmax(axis=1)
+            y_val = y_val.argmax(axis=1)
         trn_labels, trn_label_counts = np.unique(y_train, return_counts=True)
         val_labels, val_label_counts = np.unique(y_val, return_counts=True)
         stratified = True
@@ -142,31 +147,11 @@ class TrainDevNotStratified(BaseCheck):
         return stratified
 
 
-class TrainDevNormalizedSeparately(BaseCheck):
+class TrainDevNormalizedSeparately(BaseStartTrainingCheck):
     """TrainDevNormalizedSeparately"""
 
 
-# Model Weight Checks #########################################################
-
-class WeightsTooSmall(BaseCheck):
-    """WeightsTooSmall"""
-
-
-class WeightsNotNormal(BaseCheck):
-    """WeightsNotNormal"""
-
-
-class UniformWeightInit(BaseCheck):
-    """UniformWeightInit"""
-
-
-class IncompatibleWeightInitializer(BaseCheck):
-    """IncompatibleWeightInitializer"""
-
-
-# Training Data Statistics ####################################################
-
-class TrainingSamplesCorrelated(BaseCheck):
+class TrainingSamplesCorrelated(BaseStartTrainingCheck):
     """TrainingSamplesCorrelated"""
 
     code = 'K301'
@@ -180,7 +165,7 @@ class TrainingSamplesCorrelated(BaseCheck):
         return not(m[0].round(3) == 1 and c[0] > 1)
 
 
-class DuplicateTrainingSamples(BaseCheck):
+class DuplicateTrainingSamples(BaseStartTrainingCheck):
     """DuplicateTrainingSamples"""
     # http://www.ryanhmckenna.com/2017/01/efficiently-remove-duplicate-rows-from.html
     code = 'K302'
@@ -198,7 +183,7 @@ class DuplicateTrainingSamples(BaseCheck):
         return ix.shape[0] > A.shape[0]
 
 
-class DataNotNormalized(BaseCheck):
+class DataNotNormalized(BaseStartTrainingCheck):
     """DataNotNormalized"""
 
     code = 'K303'
@@ -210,41 +195,108 @@ class DataNotNormalized(BaseCheck):
         return centered and scaled
 
 
-# Activations #################################################################
+class IncompatibleWeightInitializer(BaseStartTrainingCheck):
+    code = 'K204'
+    """IncompatibleWeightInitializer.
+    This means checking if input data is compatible with the chosen
+    initialization. Look at the literature for different initliazations.
+    For example: LeCun initialization works with normalized inputs and tanh
+    activations."""
 
-class SigmoidActivation(BaseCheck):
-    """SigmoidActivation"""
 
-
-class BadTanhEncoding(BaseCheck):
+class BadTanhEncoding(BaseStartTrainingCheck):
     """BadTanhEncoding"""
 
 
-class BadLabelEncoding(BaseCheck):
+class BadLabelEncoding(BaseStartTrainingCheck):
     """BadLabelEncoding"""
 
 
-# Training ####################################################################
-
-class ParamsMoreThanTrainingSamples(BaseCheck):
+class ParamsMoreThanTrainingSamples(BaseStartTrainingCheck):
     """ParamsMoreThanTrainingSamples"""
 
-
-class VanishingGradients(BaseCheck):
-    """VanishingGradients"""
+# Checks that happen after a model has been defined ###########################
 
 
-class ExplodingGradients(BaseCheck):
-    """ExplodingGradients"""
+class BaseModelCheck(ABC):
+    """BaseModelCheck"""
+
+    code = None
+    msg = None
+    __type = 'model'
+
+    @classmethod
+    def __subclasshook__(cls, other):
+        if getattr(other, '__type', '') == cls.__type:
+            return bool(getattr(other, 'code', False))
+        return False
+
+    def check(self, model):
+        raise NotImplementedError
+
+    def warn(self):
+        """All logging logic goes here."""
+        warnings.warn(self.code + ": " + self.msg)
+
+    def __call__(self, model):
+        if not self.check(model):
+            self.warn()
 
 
-class BadBatchNormPosition(BaseCheck):
+class BadBatchNormPosition(BaseModelCheck):
     """BadBatchNormPosition"""
 
 
-class ModelOverfittingStarted(BaseCheck):
+class WeightsTooSmall(BaseModelCheck):
+    """WeightsTooSmall"""
+
+
+class WeightsNotNormal(BaseModelCheck):
+    """WeightsNotNormal.
+    scipy.stats.normaltest"""
+
+
+class UniformWeightInit(BaseModelCheck):
+    """UniformWeightInit.
+    Use ks_2samp for this."""
+
+    code = 'K203'
+    msg = 'Some layers have uniform weight initialization. ' + \
+        'This may slow down training.'
+
+    def check(self, model):
+        for l in model.layers:
+            if is_initializer_uniform(l):
+                return False
+        return True
+
+
+class SigmoidActivation(BaseModelCheck):
+    """SigmoidActivation"""
+
+    code = 'K401'
+    msg = 'Sigmoid activation found in an intermediate layer.'
+
+    def check(self, model):
+        for l in model.layers[:-1]:
+            if l.activation == sigmoid:
+                return False
+        return True
+
+# Checks that happen during training ##########################################
+
+
+class VanishingGradients(BaseStartTrainingCheck):
+    """VanishingGradients"""
+
+
+class ExplodingGradients(BaseStartTrainingCheck):
+    """ExplodingGradients"""
+
+
+class ModelOverfittingStarted(BaseStartTrainingCheck):
     """ModelOverfittingStarted"""
 
 
-class NoisyWeightUpdates(BaseCheck):
+class NoisyWeightUpdates(BaseStartTrainingCheck):
     """NoisyWeightUpdates"""
