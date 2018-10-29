@@ -1,15 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
-#
-# JSM product code
-#
-# (C) Copyright 2018 Juxt SmartMandate Pvt Ltd
-# All right reserved.
-#
-# This file is confidential and NOT open source.  Do not distribute.
-#
-
 """
 Module containing all checks.
 """
@@ -23,7 +14,7 @@ from sklearn.decomposition import PCA
 
 from keras.activations import sigmoid
 from kepler.utils import (is_power2, is_1d, is_onehotencoded,
-                          is_initializer_uniform)
+                          is_initializer_uniform, runs_test)
 
 
 def checker(fit_method, checks):
@@ -99,7 +90,7 @@ class MinibatchTooSmall(BaseStartTrainingCheck):
 class MinibatchTooLarge(BaseStartTrainingCheck):
     """MinibatchTooLarge"""
 
-    code = 'K1012'
+    code = 'K1011'
     msg = 'Batch size too large.'
 
     def check(self, X, y, *args, **kwargs):
@@ -115,7 +106,19 @@ class MinibatchTooLarge(BaseStartTrainingCheck):
 
 class DataNotShuffled(BaseStartTrainingCheck):
     """DataNotShuffled.
-    Not sure exactly how one would detect a random ordering of ints."""
+    Not sure exactly how one would detect a random ordering of ints.
+    Maybe the Runs test."""
+
+    code = 'K102'
+    msg = 'Training data is not shuffled. This may slow training down.'
+
+    def check(self, X, y, *args, **kwargs):
+        if is_onehotencoded(y):
+            y = np.argmax(y, axis=1)
+        elif not is_1d(y):
+            return True
+        z = runs_test(y)
+        return abs(z) < 1.96
 
 
 class TrainDevNotStratified(BaseStartTrainingCheck):

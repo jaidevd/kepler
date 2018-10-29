@@ -8,6 +8,10 @@ Checks Available in Kepler
 +----------+------------------------------------------------+------------------------+
 | K101     | Bad minibatch size                             | Before training begins |
 +----------+------------------------------------------------+------------------------+
+| K1010    | Minibatch too small                            | Before training begins |
++----------+------------------------------------------------+------------------------+
+| K1011    | Minibatch too large                            | Before training begins |
++----------+------------------------------------------------+------------------------+
 | K102     | Data not shuffled                              | Before training begins |
 +----------+------------------------------------------------+------------------------+
 | K103     | Train / Dev test not stratified                | Before training begins |
