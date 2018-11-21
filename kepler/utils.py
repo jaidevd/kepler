@@ -409,3 +409,38 @@ def is_initializer_uniform(layer):
         if initializer.distribution == 'uniform':
             return True
     return False
+
+
+def runs_test(x):
+    """Wald-Wolfowitz Runs Test for checking randomness.
+
+    Adapted from
+    https://www.itl.nist.gov/div898/handbook/eda/section3/eda35d.htm
+
+    Parameters
+    ----------
+    x : array-like
+        The array to be tested for randomness.
+
+    Returns
+    -------
+    float
+        The runs test statistic.
+    """
+    # check if `x` is already binary
+    unx = np.unique(x)
+    if unx.shape[0] == 2:
+        low, high = unx
+        seq = np.zeros(x.shape, dtype=bool)
+        seq[x == high] = True
+    else:
+        med = np.median(x)
+        seq = x[x != med] > med
+    n_runs = np.diff(seq).sum() + 1
+    n_pos = seq.sum()
+    n_neg = seq.shape[0] - n_pos
+    rhat = (2 * n_pos * n_neg) / (n_pos + n_neg) + 1
+    sr2 = 2 * n_pos * n_neg * (2 * n_pos * n_neg - n_pos - n_neg) / \
+        (n_pos + n_neg) ** 2 / (n_pos + n_neg - 1)
+    sr = np.sqrt(sr2)
+    return (n_runs - rhat) / sr

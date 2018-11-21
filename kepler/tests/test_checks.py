@@ -6,6 +6,7 @@ Unittests for Kepler checks.
 """
 
 from unittest import TestCase, main
+import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense, Activation
 from keras.optimizers import SGD
@@ -79,6 +80,12 @@ class TestChecks(TestCase):
         self.assertWarns(
             C.TrainDevNotStratified(), 'fit', self.X[:8], self.y[:8],
             validation_data=(self.X[8:11], self.y[8:11]), batch_size=8)
+
+    def test_data_not_shuffled(self):
+        y = np.random.choice(self.digits['target'], size=(128,))
+        y = np.sort(y)
+        y = to_categorical(y)
+        self.assertWarns(C.DataNotShuffled(), 'fit', self.X[:128], y)
 
     def test_training_samples_correlated(self):
         X, _ = make_classification(128, n_features=64)
