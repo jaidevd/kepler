@@ -1,15 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
-#
-# JSM product code
-#
-# (C) Copyright 2018 Juxt SmartMandate Pvt Ltd
-# All right reserved.
-#
-# This file is confidential and NOT open source.  Do not distribute.
-#
-
 """
 Unittests for Kepler checks.
 """
@@ -19,7 +10,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Activation
 from keras.optimizers import SGD
 from keras.utils import to_categorical
-from sklearn.datasets import load_digits
+from sklearn.datasets import load_digits, make_classification
 from kepler.main import ModelInspector
 from kepler import checks as C
 import pytest
@@ -90,10 +81,9 @@ class TestChecks(TestCase):
             validation_data=(self.X[8:11], self.y[8:11]), batch_size=8)
 
     def test_training_samples_correlated(self):
-        from sklearn.datasets import make_classification
         X, _ = make_classification(128, n_features=64)
         self.assertWarns(
-            C.TrainDevNotStratified(), 'fit', X, self.y[:128],
+            C.TrainingSamplesCorrelated(), 'fit', X, self.y[:128],
             batch_size=128)
 
     def test_duplicate_training_samples(self):

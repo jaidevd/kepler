@@ -1,15 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
-#
-# JSM product code
-#
-# (C) Copyright 2018 Juxt SmartMandate Pvt Ltd
-# All right reserved.
-#
-# This file is confidential and NOT open source.  Do not distribute.
-#
-
 """
 
 """

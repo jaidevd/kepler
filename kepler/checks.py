@@ -1,15 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
-#
-# JSM product code
-#
-# (C) Copyright 2018 Juxt SmartMandate Pvt Ltd
-# All right reserved.
-#
-# This file is confidential and NOT open source.  Do not distribute.
-#
-
 """
 Module containing all checks.
 """
@@ -127,11 +118,8 @@ class TrainDevNotStratified(BaseStartTrainingCheck):
     def check(self, X, y, *args, **kwargs):
         validation_data = kwargs.get('validation_data')
         if validation_data is None:
-            warnings.warn('{} not applicable.'.format(
-                self.__class__.__name__))
             return True
-        else:
-            y_val = validation_data[1]
+        y_val = validation_data[1]
         if is_1d(y):
             y_train = y
         elif is_onehotencoded(y):
