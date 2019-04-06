@@ -5,7 +5,6 @@
 
 """
 
-
 from keras.models import Sequential
 from keras.layers import Dense, Activation
 from kepler.main import ModelInspector

@@ -34,6 +34,7 @@ class BaseStartTrainingCheck(ABC):
     code = None
     msg = None
     __type = 'start-training'
+    enabled = True
 
     @classmethod
     def __subclasshook__(cls, other):
@@ -140,7 +141,7 @@ class TrainDevNotStratified(BaseStartTrainingCheck):
         trn_labels, trn_label_counts = np.unique(y_train, return_counts=True)
         val_labels, val_label_counts = np.unique(y_val, return_counts=True)
         stratified = True
-        if trn_labels != val_labels:
+        if np.any(trn_labels != val_labels):
             stratified = False
         elif (trn_label_counts / val_label_counts).var().round(3) > 1e-3:
             stratified = False
@@ -149,6 +150,7 @@ class TrainDevNotStratified(BaseStartTrainingCheck):
 
 class TrainDevNormalizedSeparately(BaseStartTrainingCheck):
     """TrainDevNormalizedSeparately"""
+    enabled = False
 
 
 class TrainingSamplesCorrelated(BaseStartTrainingCheck):
@@ -202,18 +204,22 @@ class IncompatibleWeightInitializer(BaseStartTrainingCheck):
     initialization. Look at the literature for different initliazations.
     For example: LeCun initialization works with normalized inputs and tanh
     activations."""
+    enabled = False
 
 
 class BadTanhEncoding(BaseStartTrainingCheck):
     """BadTanhEncoding"""
+    enabled = False
 
 
 class BadLabelEncoding(BaseStartTrainingCheck):
     """BadLabelEncoding"""
+    enabled = False
 
 
 class ParamsMoreThanTrainingSamples(BaseStartTrainingCheck):
     """ParamsMoreThanTrainingSamples"""
+    enabled = False
 
 # Checks that happen after a model has been defined ###########################
 
@@ -224,6 +230,7 @@ class BaseModelCheck(ABC):
     code = None
     msg = None
     __type = 'model'
+    enabled = True
 
     @classmethod
     def __subclasshook__(cls, other):
@@ -245,15 +252,18 @@ class BaseModelCheck(ABC):
 
 class BadBatchNormPosition(BaseModelCheck):
     """BadBatchNormPosition"""
+    enabled = False
 
 
 class WeightsTooSmall(BaseModelCheck):
     """WeightsTooSmall"""
+    enabled = False
 
 
 class WeightsNotNormal(BaseModelCheck):
     """WeightsNotNormal.
     scipy.stats.normaltest"""
+    enabled = False
 
 
 class UniformWeightInit(BaseModelCheck):
@@ -288,15 +298,19 @@ class SigmoidActivation(BaseModelCheck):
 
 class VanishingGradients(BaseStartTrainingCheck):
     """VanishingGradients"""
+    enabled = False
 
 
 class ExplodingGradients(BaseStartTrainingCheck):
     """ExplodingGradients"""
+    enabled = False
 
 
 class ModelOverfittingStarted(BaseStartTrainingCheck):
     """ModelOverfittingStarted"""
+    enabled = False
 
 
 class NoisyWeightUpdates(BaseStartTrainingCheck):
     """NoisyWeightUpdates"""
+    enabled = False

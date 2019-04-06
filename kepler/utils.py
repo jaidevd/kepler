@@ -15,7 +15,7 @@ from datetime import datetime
 
 from keras import layers as L
 from keras.engine.base_layer import Layer
-from keras.engine.training import Model
+# from keras.engine.training import Model
 from keras.utils.layer_utils import count_params as k_count_params
 import numpy as np
 from scipy.io import mmread, mmwrite
@@ -220,11 +220,7 @@ def count_layer_types(model):
     collections.Counter
         Counter object containing number of layers in the model by layer type.
     """
-    if isinstance(model, Model):
-        layer_counts = Counter([c.__class__.__name__ for c in model.layers])
-    else:
-        layer_counts = Counter([c['class_name'] for c in model])
-    return layer_counts
+    return Counter([c.__class__.__name__ for c in model.layers])
 
 
 def layer_architecture(model):
@@ -341,13 +337,14 @@ def binary_prompt(msg, default='y'):
     """
     y = 'y yes'.split()
     n = 'n no'.split()
+    all_choices = y + n + ['']
     if default.lower() in y:
         choices = '[Y/n]'
     elif default.lower() in n:
         choices = '[y/N]'
-    output = input(' '.join((msg, choices, ':')))
-    while output.lower() not in (y + n, ''):
-        output = input(' '.join((msg, choices, ':')))
+    output = input(' '.join((msg, choices, ': ')))
+    while output.lower() not in all_choices:
+        output = input(' '.join((msg, choices, ': ')))
     if not output:
         return default.lower() == 'y'
     return output.lower() in y

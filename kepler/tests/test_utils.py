@@ -33,7 +33,7 @@ class TestUtils(TestCase):
             result = cursor.execute('SELECT COUNT(*) from ' + mname)
             self.assertListEqual(result.fetchall(), [(0,)])
         metadata = cursor.execute('SELECT * FROM metadata').fetchall()
-        self.assertEquals(len(metadata), 1)
+        self.assertEqual(len(metadata), 1)
         metadata = metadata[0]
         created, location = metadata
         created = datetime.strptime(created, '%Y-%m-%d %H:%M:%S.%f')
@@ -136,7 +136,7 @@ class TestUtils(TestCase):
             Dense(3)
         ])
         x = utils.model_representation(model)
-        self.assertEquals(x.getnnz(), 2)
+        self.assertEqual(x.getnnz(), 2)
         self.assertEqual(x.sum(), 3)
         vect = utils.get_model_vectorizer()
         self.assertEqual(x[0, vect.vocabulary_['Dense']], 2)

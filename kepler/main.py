@@ -10,7 +10,6 @@ import os
 import os.path as op
 import warnings
 from datetime import datetime
-from inspect import isclass
 from uuid import uuid4
 
 import numpy as np  # noqa: F401
@@ -19,9 +18,10 @@ from scipy.sparse import vstack
 from sklearn.base import BaseEstimator
 from sklearn.metrics.pairwise import cosine_similarity
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import OperationalError
 import tensorflow as tf
 from traitlets import (Dict, Enum, HasTraits, Instance, Integer,  # noqa: F401
-                       Tuple, Unicode, Union, Bool, List)
+                       Tuple, Unicode, Union, Bool, List, default)
 
 from kepler.custom_traits import KerasModelWeights, File, KerasModelMethods
 from kepler.db_models import ExperimentDBModel, HistoryModel, ModelDBModel
@@ -62,11 +62,16 @@ class ModelInspector(HasTraits):
     # Index of the archmat corresponding to this model.
     archmat_index = Integer()
 
-    enable_model_search = Bool()
+    enable_model_search = Bool(True)
 
     checks = List()
 
     model_checks = List()
+
+    @default('checks')
+    def _default_checks(self):
+        subcls = C.BaseStartTrainingCheck.__subclasses__()
+        return [c() for c in subcls if c.enabled]
 
     def __init__(self, *args, **kwargs):
         """
@@ -141,7 +146,11 @@ class ModelInspector(HasTraits):
         self.instance = ModelDBModel()
         self.session = sessionmaker(bind=engine)()
         self.session.add(self.instance)
-        self.session.commit()
+        try:
+            self.session.commit()
+        except OperationalError:
+            raise RuntimeError('Kepler may not have initialized properly.',
+                               'Please run kepler init and try again.')
         self.write_model_config()
         config = load_config()
         if self.enable_model_search:
@@ -248,11 +257,9 @@ class ModelInspector(HasTraits):
     def run_model_checks(self):
         """Run all checks enabled at the model level."""
         if not self.model_checks:
-            for attr in dir(C):
-                obj = getattr(C, attr)
-                if isclass(obj):
-                    if issubclass(obj, C.BaseModelCheck):
-                        obj()(self.model)
+            checks = [c for c in C.BaseModelCheck.__subclasses__() if c.enabled]
+            for check in checks:
+                check()(self.model)
         else:
             for check in self.model_checks:
                 check(self.model)
@@ -283,13 +290,7 @@ class ModelProxy(HasTraits):
             self.checks = checks
         else:
             if not hasattr(self, 'checks'):
-                checks = []
-                for attr in dir(C):
-                    obj = getattr(C, attr)
-                    if isclass(obj):
-                        if issubclass(obj, C.BaseStartTrainingCheck):
-                            checks.append(obj())
-                self.checks = checks
+                self.checks = self.caller.checks
         for func in self.wrapped:
             setattr(self.model, func, C.checker(getattr(self.model, func),
                                                 self.checks))
@@ -326,7 +327,7 @@ class ModelProxy(HasTraits):
     def end_experiment(self):
         """End an `Experiment` session and save results to the db."""
         self.experiment.end_time = datetime.now()
-        self.experiment.process_history(self.history)
+        self.experiment.process_history()
         self.experiment.save()
         self.experiment.save_history()
 
