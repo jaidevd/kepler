@@ -5,21 +5,23 @@
 Tests for the kepler.utils module.
 """
 
+from configparser import ConfigParser, ExtendedInterpolation
 from datetime import datetime
 import os.path as op
 from shutil import rmtree
 from sqlite3 import connect
 from tempfile import NamedTemporaryFile, mkdtemp
-from unittest import TestCase
 
 import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense, Activation
 from keras.utils import to_categorical
 from kepler import utils
+from kepler.tests import TestKepler
+from sklearn.externals import joblib
 
 
-class TestUtils(TestCase):
+class TestUtils(TestKepler):
 
     def _check_initdb(self, conn):
         cursor = conn.cursor()
@@ -70,19 +72,29 @@ class TestUtils(TestCase):
         """Test if config can be written to arbit locations."""
         ideal_configpath = op.join(op.dirname(__file__), '..', 'fixtures',
                                    'sample.ini')
+        ideal_config = ConfigParser(interpolation=ExtendedInterpolation())
         with open(ideal_configpath, 'r') as fin:
-            ideal_config = fin.read()
-        with NamedTemporaryFile() as ntf:
+            ideal_config.read_file(fin)
+        actual_config = ConfigParser(interpolation=ExtendedInterpolation())
+        with NamedTemporaryFile(mode='r+') as ntf:
             utils.init_config(ntf.name)
             ntf.seek(0)
-            self.assertEqual(ideal_config, ntf.read().decode('utf-8'))
+            actual_config.read_file(ntf)
+            ideal_config.set('default', 'home', op.dirname(ntf.name))
+        self.assertListEqual(actual_config.sections(), ideal_config.sections())
+        for secname, section in actual_config.items():
+            self.assertDictEqual(dict(section), dict(ideal_config[secname]))
+
         # try with a directory
         try:
             tempdir = mkdtemp()
             utils.init_config(tempdir)
+            ideal_config.set('default', 'home', tempdir)
             with open(op.join(tempdir, 'config.ini'), 'r') as fin:
-                actual_config = fin.read()
-            self.assertEqual(actual_config, ideal_config)
+                actual_config.read_file(fin)
+            self.assertListEqual(actual_config.sections(), ideal_config.sections())
+            for secname, section in actual_config.items():
+                self.assertDictEqual(dict(section), dict(ideal_config[secname]))
         finally:
             rmtree(tempdir)
 
@@ -135,12 +147,12 @@ class TestUtils(TestCase):
             Activation('sigmoid', trainable=False),
             Dense(3)
         ])
-        x = utils.model_representation(model)
+        dv = joblib.load(self.config.get('models', 'vectorizer'))
+        x = utils.model_representation(model, dv)
         self.assertEqual(x.getnnz(), 2)
         self.assertEqual(x.sum(), 3)
-        vect = utils.get_model_vectorizer()
-        self.assertEqual(x[0, vect.vocabulary_['Dense']], 2)
-        self.assertEqual(x[0, vect.vocabulary_['Activation']], 1)
+        self.assertEqual(x[0, dv.vocabulary_['Dense']], 2)
+        self.assertEqual(x[0, dv.vocabulary_['Activation']], 1)
 
     def test_is_1d(self):
         x = np.random.rand(10,)
@@ -155,3 +167,8 @@ class TestUtils(TestCase):
         self.assertFalse(utils.is_onehotencoded(X * 2))
         self.assertFalse(utils.is_onehotencoded(X + 2))
         self.assertFalse(utils.is_onehotencoded(X - 1))
+
+
+if __name__ == "__main__":
+    from unittest import main
+    main()
