@@ -15,6 +15,16 @@ class File(Unicode):
         return value
 
 
+class Directory(Unicode):
+    """Trait representing a directory."""
+    def validate(self, obj, value):
+        super(Directory, self).validate(obj, value)
+        if value:
+            if not op.isdir(value):
+                raise TraitError('Directory {} does not exist.')
+        return value
+
+
 class KerasModelWeights(File):
     """A file containing Keras model weights."""
 

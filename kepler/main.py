@@ -5,6 +5,7 @@
 Kepler.
 """
 
+from configparser import ConfigParser, ExtendedInterpolation
 import json
 import os
 import os.path as op
@@ -12,7 +13,7 @@ import warnings
 from datetime import datetime
 from uuid import uuid4
 
-import numpy as np  # noqa: F401
+import numpy as np
 import pandas as pd
 from scipy.sparse import vstack
 from sklearn.base import BaseEstimator
@@ -23,9 +24,9 @@ import tensorflow as tf
 from traitlets import (Dict, Enum, HasTraits, Instance, Integer,  # noqa: F401
                        Tuple, Unicode, Union, Bool, List, default)
 
-from kepler.custom_traits import KerasModelWeights, File, KerasModelMethods
+from kepler.custom_traits import KerasModelWeights, File, KerasModelMethods, Directory
 from kepler.db_models import ExperimentDBModel, HistoryModel, ModelDBModel
-from kepler.utils import (count_params, get_engine, load_config,
+from kepler.utils import (count_params, get_engine, get_model_vectorizer,
                           load_model_arch_mat, model_representation,
                           write_model_arch_mat, binary_prompt)
 from keras import backend as K
@@ -34,8 +35,6 @@ from kepler import checks as C
 
 warnings.simplefilter('always', category=UserWarning)
 
-engine = get_engine()
-
 
 class ModelInspector(HasTraits):
     """Main entry point to a Kepler session.
@@ -43,6 +42,11 @@ class ModelInspector(HasTraits):
     This class orchestrates model logging, inspection, running experiments and
     saving results.
     """
+
+    # Kepler config home
+    home = Directory()
+
+    config = Instance(ConfigParser)
 
     # the keras / sklearn model
     model = Union([Instance(Model), Instance(BaseEstimator)])
@@ -72,6 +76,33 @@ class ModelInspector(HasTraits):
     def _default_checks(self):
         subcls = C.BaseStartTrainingCheck.__subclasses__()
         return [c() for c in subcls if c.enabled]
+
+    @default('home')
+    def _default_home(self):
+        return os.environ.get('KEPLER_HOME', op.expanduser('~/.kepler'))
+
+    @default('config')
+    def _default_config(self):
+        cfg = ConfigParser(interpolation=ExtendedInterpolation())
+        cfg.read(op.join(self.home, 'config.ini'))
+        return cfg
+
+    @property
+    def db_engine(self):
+        engine = getattr(self, '_db_engine', False)
+        if not engine:
+            dbpath = self.config.get('default', 'db')
+            self._db_engine = get_engine(dbpath)
+            engine = self._db_engine
+        return engine
+
+    @property
+    def model_vectorizer(self):
+        vect = getattr(self, '_model_vectorizer', False)
+        if not vect:
+            self._model_vectorizer = get_model_vectorizer(self.config.get('models', 'vectorizer'))
+            vect = self._model_vectorizer
+        return vect
 
     def __init__(self, *args, **kwargs):
         """
@@ -104,9 +135,8 @@ class ModelInspector(HasTraits):
         The default location is ~/.kepler/models/specs, which is controlled
         from the ('models', 'spec_dir') config option."""
         if not self.model_config:
-            config = load_config()
             uid = uuid4()
-            specs_dir = op.expanduser(config.get('models', 'spec_dir'))
+            specs_dir = op.expanduser(self.config.get('models', 'spec_dir'))
             if not op.isdir(specs_dir):
                 os.makedirs(specs_dir)
             outpath = op.join(specs_dir, str(uid) + '.txt')
@@ -126,14 +156,15 @@ class ModelInspector(HasTraits):
             calculated for the current model.
         """
         if not x:
-            x = model_representation(self.model)
-        X = load_model_arch_mat()
+            x = model_representation(self.model, self.model_vectorizer)
+        matpath = self.config.get('models', 'model_archs')
+        X = load_model_arch_mat(matpath)
         if X is None:
             X = x
         else:
             X = vstack((X, x))
         self.archmat_index = X.shape[0] - 1
-        write_model_arch_mat(X)
+        write_model_arch_mat(X, matpath)
 
     def __enter__(self):
         """Setup a Kepler session by:
@@ -144,7 +175,7 @@ class ModelInspector(HasTraits):
         4. creating a modelproxy for the user to work with
         """
         self.instance = ModelDBModel()
-        self.session = sessionmaker(bind=engine)()
+        self.session = sessionmaker(bind=self.db_engine)()
         self.session.add(self.instance)
         try:
             self.session.commit()
@@ -152,9 +183,8 @@ class ModelInspector(HasTraits):
             raise RuntimeError('Kepler may not have initialized properly.',
                                'Please run kepler init and try again.')
         self.write_model_config()
-        config = load_config()
         if self.enable_model_search:
-            if config.get('models', 'enable_model_search'):
+            if self.config.get('models', 'enable_model_search'):
                 x = model_representation(self.model)
                 self.search(x)
         self.run_model_checks()
@@ -201,7 +231,7 @@ class ModelInspector(HasTraits):
         if X is None:  # nothing to search against
             return
         d = cosine_similarity(x, X).ravel()
-        thresh = load_config().get('misc', 'model_sim_tol')
+        thresh = self.config.get('misc', 'model_sim_tol')
         d = d > float(thresh)
         if np.any(d):
             indices, = np.where(d)
@@ -212,7 +242,7 @@ class ModelInspector(HasTraits):
                 see_archs = binary_prompt(
                     'Would you like to see their graphs?')
                 if see_archs:
-                    tf_logdir = load_config().get('models', 'tensorflow_logdir')
+                    tf_logdir = self.config.get('models', 'tensorflow_logdir')
                     print('Enter location for saving graphs [{}]: '.format(
                         tf_logdir))
                     user_choice = input('>>> ')
