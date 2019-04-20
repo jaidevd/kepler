@@ -5,24 +5,25 @@
 Unittests for Kepler checks.
 """
 
-from unittest import TestCase, main
 import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense, Activation
 from keras.optimizers import SGD
 from keras.utils import to_categorical
+from kepler.tests import TestKepler
 from sklearn.datasets import load_digits, make_classification
 from kepler.main import ModelInspector
 from kepler import checks as C
 import pytest
 
 
-class TestChecks(TestCase):
+class TestChecks(TestKepler):
 
     # TODO: When runnin most tests, all DB transactions must be disabled.
 
     @classmethod
     def setUpClass(cls):
+        super(TestChecks, cls).setUpClass()
         cls.model = Sequential([
             Dense(32, input_shape=(64,)),
             Activation('sigmoid'),
@@ -36,7 +37,7 @@ class TestChecks(TestCase):
 
     def _call_keras_method(self, check, method, *args, **kwargs):
         with ModelInspector(model=self.model, enable_model_search=False,
-                            checks=[check]) as mp:
+                            checks=[check], config=self.config) as mp:
             mp.history = getattr(mp, method)(*args, **kwargs).history
 
     def assertWarns(self, check, func, *args, **kwargs):
@@ -49,7 +50,7 @@ class TestChecks(TestCase):
     def test_uniform_weight_init(self):
         msg = C.UniformWeightInit.code + ': ' + C.UniformWeightInit.msg
         with pytest.warns(UserWarning, match=msg):
-            with ModelInspector(model=self.model, checks=[],
+            with ModelInspector(model=self.model, checks=[], config=self.config,
                                 model_checks=[C.UniformWeightInit()],
                                 enable_model_search=False) as mp:
                 mp.history = mp.fit(self.X[:8], self.y[:8]).history
@@ -57,7 +58,7 @@ class TestChecks(TestCase):
     def test_sigmoid_activation(self):
         msg = C.SigmoidActivation.code + ': ' + C.SigmoidActivation.msg
         with pytest.warns(UserWarning, match=msg):
-            with ModelInspector(model=self.model, checks=[],
+            with ModelInspector(model=self.model, checks=[], config=self.config,
                                 model_checks=[C.SigmoidActivation()],
                                 enable_model_search=False) as mp:
                 mp.history = mp.fit(self.X[:8], self.y[:8]).history
@@ -105,5 +106,6 @@ class TestChecks(TestCase):
                          batch_size=8)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+    from unittest import main
     main()

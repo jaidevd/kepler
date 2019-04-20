@@ -7,10 +7,9 @@ Miscellaneous functions.
 
 import os
 import os.path as op
-import shutil
 import sqlite3
 from collections import Counter
-from configparser import ConfigParser, NoOptionError, NoSectionError
+from configparser import ConfigParser, NoOptionError, NoSectionError, ExtendedInterpolation
 from datetime import datetime
 
 from keras import layers as L
@@ -40,12 +39,13 @@ def get_keras_layers():
     return layers
 
 
-def load_config():
+def load_config(path=None):
     """Load Kepler config."""
-    config_dir = os.environ.get('KEPLER_HOME', False)
-    if not config_dir:
-        config_dir = op.expanduser('~/.kepler')
-    path = op.join(config_dir, 'config.ini')
+    if path is None:
+        config_dir = os.environ.get('KEPLER_HOME', False)
+        if not config_dir:
+            config_dir = op.expanduser('~/.kepler')
+        path = op.join(config_dir, 'config.ini')
     config = ConfigParser()
     config.read(path)
     return config
@@ -90,9 +90,7 @@ def init_model_vectorizer(path=None):
         config = load_config()
         path = config.get('models', 'vectorizer')
     path = op.expanduser(path)
-    model_config_dir = op.dirname(path)
-    if not op.isdir(model_config_dir):
-        os.makedirs(model_config_dir)
+    os.makedirs(op.dirname(path), exist_ok=True)
     layers = get_keras_layers()
     layer_dv = DictVectorizer().fit([dict.fromkeys(layers, 0)])
     joblib.dump(layer_dv, path)
@@ -130,9 +128,17 @@ def init_config(path):
     """
     path = op.expanduser(path)
     if op.isdir(path):
-        path = op.join(path, 'config.ini')
+        cfgpath = op.join(path, 'config.ini')
+    else:
+        cfgpath = path
+    home = op.dirname(cfgpath)
     sampleconfig = op.join(op.dirname(__file__), 'fixtures', 'sample.ini')
-    shutil.copy(sampleconfig, path)
+    config = ConfigParser(interpolation=ExtendedInterpolation())
+    with open(sampleconfig, 'r') as fin:
+        config.read_file(fin)
+    config.set('default', 'home', home)
+    with open(cfgpath, 'w') as fout:
+        config.write(fout)
 
 
 def get_engine(dbpath=None):
