@@ -60,7 +60,6 @@ class TestUtils(TestKepler):
 
     def test_model_vectorizer(self):
         # Test if the vectorizer functions work.
-        # Caution: This doesn't test cases where input paths are None.
         ideal_layers = utils.get_keras_layers()
         with NamedTemporaryFile() as ntf:
             utils.init_model_vectorizer(ntf.name)

@@ -25,10 +25,11 @@ from traitlets import (Dict, Enum, HasTraits, Instance, Integer,  # noqa: F401
                        Tuple, Unicode, Union, Bool, List, default)
 
 from kepler.custom_traits import KerasModelWeights, File, KerasModelMethods, Directory
-from kepler.db_models import ExperimentDBModel, HistoryModel, ModelDBModel
+from kepler.db_models import ExperimentDBModel, HistoryModel, ModelDBModel, ProjectModel
 from kepler.utils import (count_params, get_engine, get_model_vectorizer,
                           load_model_arch_mat, model_representation,
-                          write_model_arch_mat, binary_prompt)
+                          write_model_arch_mat, binary_prompt,
+                          name_keras_model)
 from keras import backend as K
 from keras.models import Model, model_from_yaml
 from kepler import checks as C
@@ -45,6 +46,8 @@ class ModelInspector(HasTraits):
 
     # Kepler config home
     home = Directory()
+
+    project = Unicode('default')
 
     config = Instance(ConfigParser)
 
@@ -72,6 +75,8 @@ class ModelInspector(HasTraits):
 
     model_checks = List()
 
+    name = Unicode()
+
     @default('checks')
     def _default_checks(self):
         subcls = C.BaseStartTrainingCheck.__subclasses__()
@@ -86,6 +91,16 @@ class ModelInspector(HasTraits):
         cfg = ConfigParser(interpolation=ExtendedInterpolation())
         cfg.read(op.join(self.home, 'config.ini'))
         return cfg
+
+    @default('name')
+    def _default_name(self):
+        if isinstance(self.model, BaseEstimator):
+            name = type(self.model).__name__
+        elif isinstance(self.model, Model):
+            name = name_keras_model(self.model)
+        else:
+            name = ''
+        return name
 
     @property
     def db_engine(self):
@@ -177,6 +192,7 @@ class ModelInspector(HasTraits):
         self.instance = ModelDBModel()
         self.session = sessionmaker(bind=self.db_engine)()
         self.session.add(self.instance)
+
         try:
             self.session.commit()
         except OperationalError:
@@ -210,6 +226,9 @@ class ModelInspector(HasTraits):
         for attr in attrs:
             setattr(self.instance, attr, getattr(self, attr))
         self.session.add(self.instance)
+        # add current model to project
+        p2model = ProjectModel(project_id=self.project, model=self.instance)
+        self.session.add(p2model)
         self.session.commit()
         self.session.close()
 
@@ -227,7 +246,7 @@ class ModelInspector(HasTraits):
         """
         if x is None:
             x = model_representation(self.model)
-        X = load_model_arch_mat()
+        X = load_model_arch_mat(self.config.get('models', 'model_archs'))
         if X is None:  # nothing to search against
             return
         d = cosine_similarity(x, X).ravel()
