@@ -44,7 +44,9 @@ class TestUtils(TestKepler):
 
     def test_initdb(self):
         # Check if initdb works.
-        self.ideal_tables = {'metadata', 'models', 'experiments', 'history'}
+        self.ideal_tables = {
+            'metadata', 'models', 'experiments',
+            'history', 'projects', 'projectmodels'}
         with NamedTemporaryFile() as ntf:
             utils.initdb(ntf.name)
             with connect(ntf.name) as conn:
