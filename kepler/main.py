@@ -201,7 +201,7 @@ class ModelInspector(HasTraits):
         self.write_model_config()
         if self.enable_model_search:
             if self.config.get('models', 'enable_model_search'):
-                x = model_representation(self.model)
+                x = model_representation(self.model, self.model_vectorizer)
                 self.search(x)
         self.run_model_checks()
         self.model_proxy = ModelProxy(self.model, self, self.checks)
@@ -245,7 +245,7 @@ class ModelInspector(HasTraits):
             Whether to prompt the user if similar models are found.
         """
         if x is None:
-            x = model_representation(self.model)
+            x = model_representation(self.model, self.model_vectorizer)
         X = load_model_arch_mat(self.config.get('models', 'model_archs'))
         if X is None:  # nothing to search against
             return

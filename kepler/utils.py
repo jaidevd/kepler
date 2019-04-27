@@ -264,7 +264,7 @@ def layer_architecture(model):
     return layer_config
 
 
-def model_representation(model, dv=None):
+def model_representation(model, dv):
     """Get a sparse vector representation of a model.
 
     Arguments:
@@ -280,8 +280,6 @@ def model_representation(model, dv=None):
             spec = yaml.load(model)
         model = layer_architecture(spec)
     layer_counts = count_layer_types(model)
-    if not dv:
-        dv = get_model_vectorizer()
     return dv.transform(layer_counts)
 
 
