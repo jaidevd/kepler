@@ -14,7 +14,8 @@ from datetime import datetime
 
 from keras import layers as L
 from keras.engine.base_layer import Layer
-# from keras.engine.training import Model
+from keras.engine.training import Model
+from keras.models import Sequential
 from keras.utils.layer_utils import count_params as k_count_params
 import numpy as np
 from scipy.io import mmread, mmwrite
@@ -24,7 +25,7 @@ from sklearn.externals import joblib
 from sqlalchemy import create_engine
 import yaml
 
-from kepler.db_models import KeplerBase
+from kepler.db_models import KeplerBase, add_project
 
 
 def get_keras_layers():
@@ -46,7 +47,7 @@ def load_config(path=None):
         if not config_dir:
             config_dir = op.expanduser('~/.kepler')
         path = op.join(config_dir, 'config.ini')
-    config = ConfigParser()
+    config = ConfigParser(interpolation=ExtendedInterpolation())
     config.read(path)
     return config
 
@@ -61,18 +62,24 @@ def initdb(path):
         Destination path of the sqlite db.
     """
     if op.isdir(path):
-        path = op.join(path, 'kepler.db')
-    with sqlite3.connect(path) as conn:
+        dbpath = op.join(path, 'kepler.db')
+    else:
+        dbpath = path
+        path = op.dirname(path)
+    with sqlite3.connect(dbpath) as conn:
         cursor = conn.cursor()
         cursor.execute('''
         CREATE TABLE metadata(created timestamp, location text);
         ''')
         cursor.execute('''
         INSERT INTO metadata(created, location) values (?, ?)''',
-                       (datetime.now(), path))
+                       (datetime.now(), dbpath))
         conn.commit()
-    engine = get_engine(path)
+    engine = get_engine(dbpath)
     KeplerBase.metadata.create_all(engine)
+
+    # add the default project
+    add_project(engine, name='default', location=path, desc='Default project')
 
 
 def init_model_vectorizer(path=None):
@@ -257,7 +264,7 @@ def layer_architecture(model):
     return layer_config
 
 
-def model_representation(model, dv=None):
+def model_representation(model, dv):
     """Get a sparse vector representation of a model.
 
     Arguments:
@@ -273,8 +280,6 @@ def model_representation(model, dv=None):
             spec = yaml.load(model)
         model = layer_architecture(spec)
     layer_counts = count_layer_types(model)
-    if not dv:
-        dv = get_model_vectorizer()
     return dv.transform(layer_counts)
 
 
@@ -447,3 +452,27 @@ def runs_test(x):
         (n_pos + n_neg) ** 2 / (n_pos + n_neg - 1)
     sr = np.sqrt(sr2)
     return (n_runs - rhat) / sr
+
+
+def name_keras_model(model):
+    """Name the keras model.
+
+    Parameters
+    ----------
+        model : keras.training.Model
+
+    Returns
+    -------
+    str
+        A made up name for the model
+
+    Example
+    -------
+
+    """
+    if isinstance(model, Sequential):
+        mtype = 'Sequential'
+    elif isinstance(model, Model):
+        mtype = 'FunctionalModel'
+    n_layers = count_layers(model)
+    return f'{mtype}-{n_layers}-layers'

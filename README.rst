@@ -48,5 +48,5 @@ The main entry point into Kepler is the ``kepler.ModelInspector`` class. It is a
    >>> from sklearn.datasets import load_digits
    >>> digits = load_digits()
    >>> X, y = digits['data'], digits['target']
-   >>> with ModelInspector(model=mnist_shallow) as mi:
+   >>> with ModelInspector(model=mnist_shallow()) as mi:
    ...      mi.fit(X, y)

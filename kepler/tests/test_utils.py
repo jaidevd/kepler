@@ -44,7 +44,9 @@ class TestUtils(TestKepler):
 
     def test_initdb(self):
         # Check if initdb works.
-        self.ideal_tables = {'metadata', 'models', 'experiments', 'history'}
+        self.ideal_tables = {
+            'metadata', 'models', 'experiments',
+            'history', 'projects', 'projectmodels'}
         with NamedTemporaryFile() as ntf:
             utils.initdb(ntf.name)
             with connect(ntf.name) as conn:
@@ -60,7 +62,6 @@ class TestUtils(TestKepler):
 
     def test_model_vectorizer(self):
         # Test if the vectorizer functions work.
-        # Caution: This doesn't test cases where input paths are None.
         ideal_layers = utils.get_keras_layers()
         with NamedTemporaryFile() as ntf:
             utils.init_model_vectorizer(ntf.name)
