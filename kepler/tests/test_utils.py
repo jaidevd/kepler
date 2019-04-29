@@ -55,8 +55,7 @@ class TestUtils(TestKepler):
         try:
             tempdir = mkdtemp()
             utils.initdb(tempdir)
-            with connect(op.join(tempdir, 'kepler.db')) as conn:
-                self._check_initdb(conn)
+            self.check_init_db(op.join(tempdir, 'kepler.db'))
         finally:
             rmtree(tempdir)
 

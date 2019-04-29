@@ -28,6 +28,18 @@ import yaml
 from kepler.db_models import KeplerBase, add_project
 
 
+def find_configuration():
+    """Find where the configuration might be located."""
+    home = os.environ.get('KEPLER_HOME', False)
+    if not home:
+        home = op.join(os.getcwd(), '.kepler')
+        if not op.isdir(home):
+            home = op.expanduser('~/.kepler')
+            if not op.isdir(home):
+                raise RuntimeError('No Kepler configuration found!')
+    return home
+
+
 def get_keras_layers():
     """Get a list of all available layers in Keras."""
     layers = []
