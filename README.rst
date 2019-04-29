@@ -30,7 +30,7 @@ After the installation, run the initialization script as follows:
 
 .. code-block:: bash
 
-   $ kepler init
+   $ kepler setup
    Welcome to Kepler!
 
 This means that the Kepler database has been successfully installed on your system.
