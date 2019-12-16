@@ -10,5 +10,5 @@ scipy==1.1.0
 # CAUTION: The following line is to avoid security vulnerabilities:
 # See: https://nvd.nist.gov/vuln/detail/CVE-2019-7164 and https://nvd.nist.gov/vuln/detail/CVE-2019-7548
 SQLAlchemy>=1.3.0
-tensorflow==1.12.0
+tensorflow==1.15.0
 traitlets==4.3.2
