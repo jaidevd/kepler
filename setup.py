@@ -18,7 +18,7 @@ setup(name='kepler',
         'scikit-learn',
         'scipy',
         'SQLAlchemy',
-        'tensorflow==1.13.1',
+        'tensorflow==2.3.1',
         'traitlets'
       ],
       entry_points='''
